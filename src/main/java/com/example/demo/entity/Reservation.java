@@ -2,7 +2,6 @@ package com.example.demo.entity;
 
 import com.example.demo.entity.enums.ReservationStatus;
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;

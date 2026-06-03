@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class CreateAuthorDTO {
-    private String firstName;
-    private String lastName;
+  private String firstName;
+  private String lastName;
 }

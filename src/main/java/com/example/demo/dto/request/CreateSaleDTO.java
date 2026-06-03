@@ -1,14 +1,13 @@
 package com.example.demo.dto.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
 import java.time.LocalDate;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 @Data
 @AllArgsConstructor
 public class CreateSaleDTO {
-    private LocalDate date;
-    private List<CreateSaleBookCopyDTO> books;
+  private LocalDate date;
+  private List<CreateSaleBookCopyDTO> books;
 }

@@ -6,8 +6,8 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class CreateSaleBookCopyDTO {
-    private String saleId;
-    private String bookCopyId;
-    private double unitPrice;
-    private int quantity;
+  private String saleId;
+  private String bookCopyId;
+  private double unitPrice;
+  private int quantity;
 }

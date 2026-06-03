@@ -1,9 +1,7 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -28,7 +26,7 @@ public class Book {
   @Column(nullable = false)
   private String title;
 
-  @Column(unique = true,  nullable = false)
+  @Column(unique = true, nullable = false)
   private String isbn;
 
   @Lob

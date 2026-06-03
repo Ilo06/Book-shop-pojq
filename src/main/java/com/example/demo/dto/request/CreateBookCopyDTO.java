@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class CreateBookCopyDTO {
-    private String bookId;
-    private String location;
-    private BookStatus status;
+  private String bookId;
+  private String location;
+  private BookStatus status;
 }

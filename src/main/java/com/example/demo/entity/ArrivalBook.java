@@ -7,25 +7,23 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name="arrival_book")
+@Table(name = "arrival_book")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class ArrivalBook {
-    @EmbeddedId
-    private ArrivalBookId arrivalBookId;
+  @EmbeddedId private ArrivalBookId arrivalBookId;
 
-    @ManyToOne
-    @MapsId("arrivalId")
-    @JoinColumn(name = "arrival_id")
-    private Arrival arrival;
+  @ManyToOne
+  @MapsId("arrivalId")
+  @JoinColumn(name = "arrival_id")
+  private Arrival arrival;
 
-    @ManyToOne
-    @MapsId("bookId")
-    @JoinColumn(name = "book_id")
-    private Book book;
+  @ManyToOne
+  @MapsId("bookId")
+  @JoinColumn(name = "book_id")
+  private Book book;
 
-    @Column(nullable = false)
-    private int quantity;
-
+  @Column(nullable = false)
+  private int quantity;
 }

@@ -1,7 +1,6 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -30,5 +29,4 @@ public class Sale {
 
   @OneToMany(mappedBy = "sale")
   private List<SaleBookCopy> books;
-
 }
