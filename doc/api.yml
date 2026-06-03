@@ -1,0 +1,1105 @@
+openapi: 3.1.0
+
+info:
+  title: Book Management API
+  version: 1.0.0
+  description: >
+    API REST pour la gestion d'une librairie : œuvres bibliographiques, exemplaires
+    physiques, arrivages, ventes, réservations et tableau de bord.
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Développement local
+
+tags:
+  - name: genres
+    description: Catégories de livres
+  - name: authors
+    description: Auteurs
+  - name: books
+    description: Œuvres bibliographiques
+  - name: book-copies
+    description: Exemplaires physiques
+  - name: arrivals
+    description: Réceptions de stock
+  - name: sales
+    description: Ventes
+  - name: reservations
+    description: Réservations
+  - name: dashboard
+    description: Métriques et indicateurs
+
+# ══════════════════════════════════════════════════════════════
+#  PATHS
+# ══════════════════════════════════════════════════════════════
+paths:
+
+  # ── Genres ─────────────────────────────────────────────────
+
+  /genres:
+    get:
+      tags: [genres]
+      summary: Liste tous les genres
+      operationId: listGenres
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Genre'
+    post:
+      tags: [genres]
+      summary: Crée un genre
+      operationId: createGenre
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenreInput'
+      responses:
+        '201':
+          description: Créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Genre'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /genres/{genreId}:
+    parameters:
+      - $ref: '#/components/parameters/genreId'
+    get:
+      tags: [genres]
+      summary: Détail d'un genre
+      operationId: getGenre
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Genre'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [genres]
+      summary: Met à jour un genre
+      operationId: updateGenre
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenreInput'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Genre'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [genres]
+      summary: Supprime un genre
+      operationId: deleteGenre
+      responses:
+        '204':
+          description: Supprimé
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  # ── Authors ─────────────────────────────────────────────────
+
+  /authors:
+    get:
+      tags: [authors]
+      summary: Liste tous les auteurs
+      operationId: listAuthors
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Author'
+    post:
+      tags: [authors]
+      summary: Crée un auteur
+      operationId: createAuthor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorInput'
+      responses:
+        '201':
+          description: Créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Author'
+
+  /authors/{authorId}:
+    parameters:
+      - $ref: '#/components/parameters/authorId'
+    get:
+      tags: [authors]
+      summary: Détail d'un auteur
+      operationId: getAuthor
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Author'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [authors]
+      summary: Met à jour un auteur
+      operationId: updateAuthor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorInput'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Author'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [authors]
+      summary: Supprime un auteur
+      operationId: deleteAuthor
+      responses:
+        '204':
+          description: Supprimé
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── Books ───────────────────────────────────────────────────
+
+  /books:
+    get:
+      tags: [books]
+      summary: Liste tous les livres
+      operationId: listBooks
+      parameters:
+        - name: genreId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: authorId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: search
+          in: query
+          description: Recherche plein-texte sur titre / ISBN
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookSummary'
+    post:
+      tags: [books]
+      summary: Crée un livre
+      operationId: createBook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookInput'
+      responses:
+        '201':
+          description: Créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /books/{bookId}:
+    parameters:
+      - $ref: '#/components/parameters/bookId'
+    get:
+      tags: [books]
+      summary: Détail d'un livre
+      operationId: getBook
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [books]
+      summary: Met à jour un livre
+      operationId: updateBook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookInput'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [books]
+      summary: Supprime un livre
+      operationId: deleteBook
+      responses:
+        '204':
+          description: Supprimé
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /books/{bookId}/copies:
+    parameters:
+      - $ref: '#/components/parameters/bookId'
+    get:
+      tags: [books]
+      summary: Exemplaires d'un livre
+      operationId: listBookCopiesByBook
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookCopy'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── BookCopies ──────────────────────────────────────────────
+
+  /book-copies:
+    get:
+      tags: [book-copies]
+      summary: Liste tous les exemplaires
+      operationId: listBookCopies
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/BookCopyStatus'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookCopy'
+    post:
+      tags: [book-copies]
+      summary: Crée un exemplaire
+      operationId: createBookCopy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookCopyInput'
+      responses:
+        '201':
+          description: Créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookCopy'
+
+  /book-copies/{copyId}:
+    parameters:
+      - $ref: '#/components/parameters/copyId'
+    get:
+      tags: [book-copies]
+      summary: Détail d'un exemplaire
+      operationId: getBookCopy
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookCopy'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [book-copies]
+      summary: Met à jour le statut / l'emplacement d'un exemplaire
+      operationId: patchBookCopy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookCopyPatch'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookCopy'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [book-copies]
+      summary: Supprime un exemplaire
+      operationId: deleteBookCopy
+      responses:
+        '204':
+          description: Supprimé
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── Arrivals ────────────────────────────────────────────────
+
+  /arrivals:
+    get:
+      tags: [arrivals]
+      summary: Liste tous les arrivages
+      operationId: listArrivals
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Arrival'
+    post:
+      tags: [arrivals]
+      summary: Enregistre un arrivage
+      operationId: createArrival
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArrivalInput'
+      responses:
+        '201':
+          description: Créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Arrival'
+
+  /arrivals/{arrivalId}:
+    parameters:
+      - $ref: '#/components/parameters/arrivalId'
+    get:
+      tags: [arrivals]
+      summary: Détail d'un arrivage
+      operationId: getArrival
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Arrival'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── Sales ───────────────────────────────────────────────────
+
+  /sales:
+    get:
+      tags: [sales]
+      summary: Liste toutes les ventes
+      operationId: listSales
+      parameters:
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sale'
+    post:
+      tags: [sales]
+      summary: Enregistre une vente
+      operationId: createSale
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaleInput'
+      responses:
+        '201':
+          description: Créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sale'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /sales/{saleId}:
+    parameters:
+      - $ref: '#/components/parameters/saleId'
+    get:
+      tags: [sales]
+      summary: Détail d'une vente
+      operationId: getSale
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sale'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── Reservations ────────────────────────────────────────────
+
+  /reservations:
+    get:
+      tags: [reservations]
+      summary: Liste toutes les réservations
+      operationId: listReservations
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/ReservationStatus'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reservation'
+    post:
+      tags: [reservations]
+      summary: Crée une réservation
+      operationId: createReservation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationInput'
+      responses:
+        '201':
+          description: Créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+
+  /reservations/{reservationId}:
+    parameters:
+      - $ref: '#/components/parameters/reservationId'
+    get:
+      tags: [reservations]
+      summary: Détail d'une réservation
+      operationId: getReservation
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [reservations]
+      summary: Change le statut d'une réservation
+      operationId: patchReservation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  $ref: '#/components/schemas/ReservationStatus'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [reservations]
+      summary: Annule / supprime une réservation
+      operationId: deleteReservation
+      responses:
+        '204':
+          description: Supprimé
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── Dashboard ───────────────────────────────────────────────
+
+  /dashboard/today-revenue:
+    get:
+      tags: [dashboard]
+      summary: Chiffre d'affaires du jour
+      operationId: getTodayRevenue
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  todayRevenue:
+                    type: number
+                    format: double
+                    example: 1250.00
+
+  /dashboard/monthly-revenue:
+    get:
+      tags: [dashboard]
+      summary: Chiffre d'affaires du mois en cours
+      operationId: getMonthlyRevenue
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  monthlyRevenue:
+                    type: number
+                    format: double
+                    example: 34200.00
+
+  /dashboard/books-in-stock:
+    get:
+      tags: [dashboard]
+      summary: Nombre d'exemplaires disponibles par livre
+      operationId: getBooksInStock
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StockEntry'
+
+  /dashboard/low-stock:
+    get:
+      tags: [dashboard]
+      summary: Livres avec moins de 3 exemplaires disponibles
+      operationId: getLowStock
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StockEntry'
+
+  /dashboard/top-sellers:
+    get:
+      tags: [dashboard]
+      summary: Livres les plus vendus
+      operationId: getTopSellers
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TopSellerEntry'
+
+  /dashboard/revenue-by-genre:
+    get:
+      tags: [dashboard]
+      summary: Chiffre d'affaires ventilé par genre
+      operationId: getRevenueByGenre
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RevenueByGenreEntry'
+
+# ══════════════════════════════════════════════════════════════
+#  COMPONENTS
+# ══════════════════════════════════════════════════════════════
+components:
+
+  # ── Parameters ─────────────────────────────────────────────
+  parameters:
+    genreId:
+      name: genreId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    authorId:
+      name: authorId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    bookId:
+      name: bookId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    copyId:
+      name: copyId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    arrivalId:
+      name: arrivalId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    saleId:
+      name: saleId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    reservationId:
+      name: reservationId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  # ── Responses ───────────────────────────────────────────────
+  responses:
+    NotFound:
+      description: Ressource introuvable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Conflit (ex. ISBN déjà existant)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnprocessableEntity:
+      description: Données métier invalides (ex. exemplaire déjà vendu)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  # ── Schemas ─────────────────────────────────────────────────
+  schemas:
+
+    # Enums
+    BookCopyStatus:
+      type: string
+      enum: [AVAILABLE, SOLD, RESERVED]
+
+    ReservationStatus:
+      type: string
+      enum: [PENDING, CONFIRMED, CANCELLED]
+
+    # Genre
+    Genre:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Science-fiction
+
+    GenreInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+
+    # Author
+    Author:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+          example: Victor
+        lastName:
+          type: string
+          example: Hugo
+
+    AuthorInput:
+      type: object
+      required: [firstName, lastName]
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 100
+
+    # Book
+    BookSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        isbn:
+          type: string
+        price:
+          type: number
+          format: double
+        genre:
+          $ref: '#/components/schemas/Genre'
+
+    Book:
+      allOf:
+        - $ref: '#/components/schemas/BookSummary'
+        - type: object
+          properties:
+            description:
+              type: string
+            publishDate:
+              type: string
+              format: date
+            authors:
+              type: array
+              items:
+                $ref: '#/components/schemas/Author'
+
+    BookInput:
+      type: object
+      required: [title, isbn, genreId]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        isbn:
+          type: string
+          pattern: '^(97[89])?[0-9]{9}[0-9X]$'
+          example: '9782070360024'
+        description:
+          type: string
+        price:
+          type: number
+          format: double
+          minimum: 0
+        publishDate:
+          type: string
+          format: date
+        genreId:
+          type: string
+          format: uuid
+        authorIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+
+    # BookCopy
+    BookCopy:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/BookCopyStatus'
+        acquisitionDate:
+          type: string
+          format: date
+        location:
+          type: string
+          example: 'Rayon A - Étagère 3'
+
+    BookCopyInput:
+      type: object
+      required: [bookId]
+      properties:
+        bookId:
+          type: string
+          format: uuid
+        acquisitionDate:
+          type: string
+          format: date
+        location:
+          type: string
+          maxLength: 100
+
+    BookCopyPatch:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/BookCopyStatus'
+        location:
+          type: string
+          maxLength: 100
+
+    # Arrival
+    ArrivalBookLine:
+      type: object
+      required: [bookId, quantity]
+      properties:
+        bookId:
+          type: string
+          format: uuid
+        quantity:
+          type: integer
+          minimum: 1
+
+    Arrival:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        arrivalDate:
+          type: string
+          format: date
+        books:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArrivalBookLine'
+
+    ArrivalInput:
+      type: object
+      required: [books]
+      properties:
+        arrivalDate:
+          type: string
+          format: date
+        books:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ArrivalBookLine'
+
+    # Sale
+    Sale:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        saleDate:
+          type: string
+          format: date
+        unitPrice:
+          type: number
+          format: double
+        bookCopyIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+
+    SaleInput:
+      type: object
+      required: [bookCopyIds, unitPrice]
+      properties:
+        saleDate:
+          type: string
+          format: date
+        unitPrice:
+          type: number
+          format: double
+          minimum: 0
+        bookCopyIds:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            format: uuid
+
+    # Reservation
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        reservationDate:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/ReservationStatus'
+        bookIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+
+    ReservationInput:
+      type: object
+      required: [bookIds]
+      properties:
+        reservationDate:
+          type: string
+          format: date
+        bookIds:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            format: uuid
+
+    # Dashboard
+    StockEntry:
+      type: object
+      properties:
+        bookId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        availableCopies:
+          type: integer
+
+    TopSellerEntry:
+      type: object
+      properties:
+        bookId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        unitsSold:
+          type: integer
+
+    RevenueByGenreEntry:
+      type: object
+      properties:
+        genreId:
+          type: string
+          format: uuid
+        genreName:
+          type: string
+        revenue:
+          type: number
+          format: double
+
+    # Error
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 404
+        error:
+          type: string
+          example: Not Found
+        message:
+          type: string
+          example: "Book with id '...' not found"
+        timestamp:
+          type: string
+          format: date-time
