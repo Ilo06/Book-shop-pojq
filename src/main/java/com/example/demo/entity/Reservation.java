@@ -2,7 +2,8 @@ package com.example.demo.entity;
 
 import com.example.demo.entity.enums.ReservationStatus;
 import jakarta.persistence.*;
-import java.util.Date;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -25,7 +26,8 @@ public class Reservation {
   private UUID id;
 
   @Temporal(TemporalType.TIMESTAMP)
-  private Date reservationDate;
+  @Column(nullable = false)
+  private LocalDateTime reservationDate;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)

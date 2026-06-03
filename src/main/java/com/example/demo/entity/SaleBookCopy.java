@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name="sale_book_copy")
 @Data
@@ -28,6 +30,6 @@ public class SaleBookCopy {
     @Column(nullable = false)
     private int quantity;
 
-    @Column(nullable = false)
-    private double unitPrice;
+    @Column(precision = 10, scale = 2, nullable = false)
+    private BigDecimal unitPrice;
 }

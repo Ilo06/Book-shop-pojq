@@ -1,6 +1,8 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
+
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -26,7 +28,7 @@ public class Book {
   @Column(nullable = false)
   private String title;
 
-  @Column(unique = true)
+  @Column(unique = true,  nullable = false)
   private String isbn;
 
   @Lob
@@ -34,7 +36,8 @@ public class Book {
   private String description;
 
   @Temporal(TemporalType.DATE)
-  private Date publishDate;
+  @Column(nullable = false)
+  private LocalDate publishDate;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "genre_id", nullable = false)
