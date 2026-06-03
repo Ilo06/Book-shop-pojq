@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.example.demo.entity.enums.BookStatus;
 import jakarta.persistence.*;
 import java.util.Date;
 import java.util.UUID;
