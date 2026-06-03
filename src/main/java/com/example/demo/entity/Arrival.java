@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "arrivals")
+@Table(name = "arrival")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,10 +26,6 @@ public class Arrival {
   @Temporal(TemporalType.TIMESTAMP)
   private Date arrivalDate;
 
-  @ManyToMany(fetch = FetchType.LAZY)
-  @JoinTable(
-      name = "arrival_books",
-      joinColumns = @JoinColumn(name = "arrival_id"),
-      inverseJoinColumns = @JoinColumn(name = "book_id"))
-  private List<Book> books;
+  @OneToMany(mappedBy = "arrival")
+  private List<ArrivalBook> books;
 }

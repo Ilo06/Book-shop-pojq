@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "sales")
+@Table(name = "sale")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,12 +27,8 @@ public class Sale {
   @Temporal(TemporalType.TIMESTAMP)
   private Date saleDate;
 
-  @ManyToMany(fetch = FetchType.LAZY)
-  @JoinTable(
-      name = "sale_books",
-      joinColumns = @JoinColumn(name = "sale_id"),
-      inverseJoinColumns = @JoinColumn(name = "book_id"))
-  private List<Book> books;
+  @OneToMany(mappedBy = "sale")
+  private List<SaleBookCopy> books;
 
   @Column(precision = 10, scale = 2, nullable = false)
   private BigDecimal unitPrice;

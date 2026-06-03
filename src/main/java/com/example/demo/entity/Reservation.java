@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "reservations")
+@Table(name = "reservation")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -31,10 +31,6 @@ public class Reservation {
   @Column(nullable = false)
   private ReservationStatus status; // PENDING, CONFIRMED, CANCELLED
 
-  @ManyToMany(fetch = FetchType.LAZY)
-  @JoinTable(
-      name = "reservation_books",
-      joinColumns = @JoinColumn(name = "reservation_id"),
-      inverseJoinColumns = @JoinColumn(name = "book_id"))
-  private List<Book> books;
+  @OneToMany(mappedBy = "reservation")
+  private List<ReservationBook> books;
 }

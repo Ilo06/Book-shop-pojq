@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "books")
+@Table(name = "book")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -42,7 +42,7 @@ public class Book {
 
   @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(
-      name = "book_authors",
+      name = "book_author",
       joinColumns = @JoinColumn(name = "book_id"),
       inverseJoinColumns = @JoinColumn(name = "author_id"))
   private List<Author> authors;
