@@ -1,15 +1,14 @@
 package com.example.demo.entity;
 
-import com.example.demo.entity.Genre;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "books")
@@ -20,32 +19,31 @@ import java.util.UUID;
 @Builder
 public class Book {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private UUID id;
 
-    @Column(nullable = false)
-    private String title;
+  @Column(nullable = false)
+  private String title;
 
-    @Column(unique = true)
-    private String isbn;
+  @Column(unique = true)
+  private String isbn;
 
-    @Lob
-    @Column(columnDefinition = "TEXT")
-    private String description;
+  @Lob
+  @Column(columnDefinition = "TEXT")
+  private String description;
 
-    @Temporal(TemporalType.DATE)
-    private Date publishDate;
+  @Temporal(TemporalType.DATE)
+  private Date publishDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "genre_id", nullable = false)
-    private Genre genre;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "genre_id", nullable = false)
+  private Genre genre;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "book_authors",
-            joinColumns = @JoinColumn(name = "book_id"),
-            inverseJoinColumns = @JoinColumn(name = "author_id")
-    )
-    private List<Author> authors;
+  @ManyToMany(fetch = FetchType.LAZY)
+  @JoinTable(
+      name = "book_authors",
+      joinColumns = @JoinColumn(name = "book_id"),
+      inverseJoinColumns = @JoinColumn(name = "author_id"))
+  private List<Author> authors;
 }
