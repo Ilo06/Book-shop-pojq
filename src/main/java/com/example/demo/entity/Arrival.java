@@ -1,7 +1,7 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "arrivals")
+@Table(name = "arrival")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,13 +23,10 @@ public class Arrival {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  @Temporal(TemporalType.TIMESTAMP)
-  private Date arrivalDate;
+  @Temporal(TemporalType.DATE)
+  @Column(nullable = false)
+  private LocalDate arrivalDate;
 
-  @ManyToMany(fetch = FetchType.LAZY)
-  @JoinTable(
-      name = "arrival_books",
-      joinColumns = @JoinColumn(name = "arrival_id"),
-      inverseJoinColumns = @JoinColumn(name = "book_id"))
-  private List<Book> books;
+  @OneToMany(mappedBy = "arrival")
+  private List<ArrivalBook> books;
 }

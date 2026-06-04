@@ -1,7 +1,7 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "books")
+@Table(name = "book")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,7 +26,7 @@ public class Book {
   @Column(nullable = false)
   private String title;
 
-  @Column(unique = true)
+  @Column(unique = true, nullable = false)
   private String isbn;
 
   @Lob
@@ -34,7 +34,8 @@ public class Book {
   private String description;
 
   @Temporal(TemporalType.DATE)
-  private Date publishDate;
+  @Column(nullable = false)
+  private LocalDate publishDate;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "genre_id", nullable = false)
@@ -42,7 +43,7 @@ public class Book {
 
   @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(
-      name = "book_authors",
+      name = "book_author",
       joinColumns = @JoinColumn(name = "book_id"),
       inverseJoinColumns = @JoinColumn(name = "author_id"))
   private List<Author> authors;

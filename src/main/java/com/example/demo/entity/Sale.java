@@ -1,8 +1,7 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -12,7 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "sales")
+@Table(name = "sale")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -24,16 +23,10 @@ public class Sale {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  @Temporal(TemporalType.TIMESTAMP)
-  private Date saleDate;
+  @Temporal(TemporalType.DATE)
+  @Column(nullable = false)
+  private LocalDate saleDate;
 
-  @ManyToMany(fetch = FetchType.LAZY)
-  @JoinTable(
-      name = "sale_books",
-      joinColumns = @JoinColumn(name = "sale_id"),
-      inverseJoinColumns = @JoinColumn(name = "book_id"))
-  private List<Book> books;
-
-  @Column(precision = 10, scale = 2, nullable = false)
-  private BigDecimal unitPrice;
+  @OneToMany(mappedBy = "sale")
+  private List<SaleBookCopy> books;
 }
