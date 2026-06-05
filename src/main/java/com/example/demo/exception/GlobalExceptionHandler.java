@@ -19,7 +19,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(ResourceConflictException.class)
   public ResponseEntity<ErrorResponse> handleResourceConflict(
-      ResourceConflictException ex) { // Change this
+      ResourceConflictException ex) { 
     ErrorResponse error =
         new ErrorResponse(
             HttpStatus.CONFLICT.value(), "Conflict", ex.getMessage(), LocalDateTime.now());
@@ -69,10 +69,15 @@ public class GlobalExceptionHandler {
       org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
   public ResponseEntity<ErrorResponse> handleTypeMismatch(
       org.springframework.web.method.annotation.MethodArgumentTypeMismatchException ex) {
+
+    String targetType = ex.getRequiredType() != null 
+        ? ex.getRequiredType().getSimpleName() 
+        : "unknown type";
+
     String message =
         String.format(
             "The parameter '%s' with value '%s' could not be converted to type '%s'",
-            ex.getName(), ex.getValue(), ex.getRequiredType().getSimpleName());
+            ex.getName(), ex.getValue(), targetType);
 
     ErrorResponse error =
         new ErrorResponse(
