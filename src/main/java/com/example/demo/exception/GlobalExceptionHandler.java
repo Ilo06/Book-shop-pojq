@@ -18,8 +18,7 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(ResourceConflictException.class)
-  public ResponseEntity<ErrorResponse> handleResourceConflict(
-      ResourceConflictException ex) { 
+  public ResponseEntity<ErrorResponse> handleResourceConflict(ResourceConflictException ex) {
     ErrorResponse error =
         new ErrorResponse(
             HttpStatus.CONFLICT.value(), "Conflict", ex.getMessage(), LocalDateTime.now());
@@ -70,9 +69,8 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleTypeMismatch(
       org.springframework.web.method.annotation.MethodArgumentTypeMismatchException ex) {
 
-    String targetType = ex.getRequiredType() != null 
-        ? ex.getRequiredType().getSimpleName() 
-        : "unknown type";
+    String targetType =
+        ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown type";
 
     String message =
         String.format(
