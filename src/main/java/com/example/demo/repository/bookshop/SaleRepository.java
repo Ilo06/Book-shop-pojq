@@ -19,7 +19,7 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
 
   @Query(
       """
-      SELECT COALESCE(SUM(sbc.unitPrice * sbc.quantity), 0)
+      SELECT COALESCE(SUM(sbc.price), 0)
       FROM Sale s
       JOIN s.books sbc
       WHERE s.saleDate = CURRENT_DATE
@@ -28,7 +28,7 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
 
   @Query(
       """
-      SELECT COALESCE(SUM(sbc.unitPrice * sbc.quantity), 0)
+      SELECT COALESCE(SUM(sbc.price), 0)
       FROM Sale s
       JOIN s.books sbc
       WHERE EXTRACT(YEAR  FROM s.saleDate) = EXTRACT(YEAR  FROM CURRENT_DATE)
@@ -39,14 +39,12 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
   @Query(
       """
       SELECT b.id              AS bookId,
-             b.title           AS title,
-             SUM(sbc.quantity) AS totalQuantity
+             b.title           AS title
       FROM Sale s
       JOIN s.books sbc
       JOIN sbc.bookCopy bc
       JOIN bc.book b
       GROUP BY b.id, b.title
-      ORDER BY SUM(sbc.quantity) DESC
       """)
   List<TopSellerProjection> findTopSellers(Pageable pageable);
 
@@ -54,7 +52,7 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
       """
       SELECT g.id                              AS genreId,
              g.name                            AS genreName,
-             SUM(sbc.unitPrice * sbc.quantity) AS totalRevenue
+             SUM(sbc.price) AS totalRevenue
       FROM Sale s
       JOIN s.books sbc
       JOIN sbc.bookCopy bc
