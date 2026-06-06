@@ -13,13 +13,12 @@ public interface BookRepository extends JpaRepository<Book, UUID> {
 
   boolean existsByIsbn(String isbn);
 
-  @Query(
-      """
+  @Query("""
       SELECT b FROM Book b
-      WHERE (:genreId IS NULL OR b.genre.id = :genreId)
+      WHERE (:genreId  IS NULL OR b.genre.id = :genreId)
         AND (:authorId IS NULL OR EXISTS (
               SELECT 1 FROM b.authors a WHERE a.id = :authorId))
-        AND (:search IS NULL OR
+        AND (:search   IS NULL OR
               LOWER(b.title) LIKE LOWER(CONCAT('%', :search, '%')) OR
               LOWER(b.isbn)  LIKE LOWER(CONCAT('%', :search, '%')))
       """)
