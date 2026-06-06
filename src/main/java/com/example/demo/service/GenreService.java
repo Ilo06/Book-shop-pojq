@@ -28,23 +28,24 @@ public class GenreService {
   }
 
   @Transactional
-  public GenreResponse create(CreateGenreDTO input) {
-    if (genreRepository.existsByName(input.getName())) {
+  public GenreResponse create(CreateGenreDTO createGenreDTO) {
+    if (genreRepository.existsByNameIgnoreCase(createGenreDTO.getName())) {
       throw new ResourceConflictException(
-          "Genre with name '" + input.getName() + "' already exists");
+          "Genre with name '" + createGenreDTO.getName() + "' already exists");
     }
-    Genre genre = Genre.builder().name(input.getName()).build();
+    Genre genre = Genre.builder().name(createGenreDTO.getName()).build();
     return toResponse(genreRepository.save(genre));
   }
 
   @Transactional
-  public GenreResponse update(UUID id, CreateGenreDTO input) {
+  public GenreResponse update(UUID id, CreateGenreDTO createGenreDTO) {
     Genre genre = getOrThrow(id);
-    if (!genre.getName().equals(input.getName()) && genreRepository.existsByName(input.getName())) {
+    if (!genre.getName().equalsIgnoreCase(createGenreDTO.getName())
+        && genreRepository.existsByNameIgnoreCase(createGenreDTO.getName())) {
       throw new ResourceConflictException(
-          "Genre with name '" + input.getName() + "' already exists");
+          "Genre with name '" + createGenreDTO.getName() + "' already exists");
     }
-    genre.setName(input.getName());
+    genre.setName(createGenreDTO.getName());
     return toResponse(genreRepository.save(genre));
   }
 
