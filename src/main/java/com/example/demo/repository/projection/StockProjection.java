@@ -4,6 +4,8 @@ import java.util.UUID;
 
 public interface StockProjection {
   UUID getBookId();
+
   String getTitle();
+
   Long getAvailableCopies();
 }

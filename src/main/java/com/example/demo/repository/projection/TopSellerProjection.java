@@ -4,6 +4,8 @@ import java.util.UUID;
 
 public interface TopSellerProjection {
   UUID getBookId();
+
   String getTitle();
+
   Long getTotalQuantity();
 }

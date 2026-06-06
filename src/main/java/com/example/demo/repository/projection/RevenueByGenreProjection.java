@@ -5,6 +5,8 @@ import java.util.UUID;
 
 public interface RevenueByGenreProjection {
   UUID getGenreId();
+
   String getGenreName();
+
   BigDecimal getTotalRevenue();
 }

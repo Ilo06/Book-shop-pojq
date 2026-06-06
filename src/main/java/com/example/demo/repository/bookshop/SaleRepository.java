@@ -17,7 +17,8 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
 
   List<Sale> findBySaleDateBetween(LocalDate from, LocalDate to);
 
-  @Query("""
+  @Query(
+      """
       SELECT COALESCE(SUM(sbc.unitPrice * sbc.quantity), 0)
       FROM Sale s
       JOIN s.books sbc
@@ -25,7 +26,8 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
       """)
   BigDecimal findTodayRevenue();
 
-  @Query("""
+  @Query(
+      """
       SELECT COALESCE(SUM(sbc.unitPrice * sbc.quantity), 0)
       FROM Sale s
       JOIN s.books sbc
@@ -34,7 +36,8 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
       """)
   BigDecimal findMonthlyRevenue();
 
-  @Query("""
+  @Query(
+      """
       SELECT b.id              AS bookId,
              b.title           AS title,
              SUM(sbc.quantity) AS totalQuantity
@@ -47,7 +50,8 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
       """)
   List<TopSellerProjection> findTopSellers(Pageable pageable);
 
-  @Query("""
+  @Query(
+      """
       SELECT g.id                              AS genreId,
              g.name                            AS genreName,
              SUM(sbc.unitPrice * sbc.quantity) AS totalRevenue

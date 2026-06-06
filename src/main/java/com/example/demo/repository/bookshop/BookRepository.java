@@ -13,7 +13,8 @@ public interface BookRepository extends JpaRepository<Book, UUID> {
 
   boolean existsByIsbn(String isbn);
 
-  @Query("""
+  @Query(
+      """
       SELECT b FROM Book b
       WHERE (:genreId  IS NULL OR b.genre.id = :genreId)
         AND (:authorId IS NULL OR EXISTS (

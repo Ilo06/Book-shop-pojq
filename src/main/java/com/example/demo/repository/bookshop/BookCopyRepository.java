@@ -16,7 +16,8 @@ public interface BookCopyRepository extends JpaRepository<BookCopy, UUID> {
 
   List<BookCopy> findByStatus(BookStatus status);
 
-  @Query("""
+  @Query(
+      """
       SELECT b.id      AS bookId,
              b.title   AS title,
              COUNT(bc) AS availableCopies
@@ -27,7 +28,8 @@ public interface BookCopyRepository extends JpaRepository<BookCopy, UUID> {
       """)
   List<StockProjection> findAvailableCopiesPerBook();
 
-  @Query("""
+  @Query(
+      """
       SELECT b.id      AS bookId,
              b.title   AS title,
              COUNT(bc) AS availableCopies
