@@ -13,3 +13,6 @@ spring:
     database: postgresql
     hibernate:
       ddl-auto: validate
+  flyway:
+    baseline-on-migrate: true
+    baseline-version: 0
