@@ -5,6 +5,7 @@ import com.example.demo.exception.ResourceConflictException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.bookshop.SaleBookCopyRepository;
 import com.example.demo.repository.bookshop.SaleRepository;
+import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +27,7 @@ public class SaleService {
     return saleRepository.findAll();
   }
 
+  @Transactional
   public Sale save(Sale sale) {
     sale.getBooks()
         .forEach(
