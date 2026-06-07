@@ -1,6 +1,7 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -33,8 +34,10 @@ public class Book {
   @Column(columnDefinition = "TEXT")
   private String description;
 
+  @Column(precision = 10, scale = 2)
+  private BigDecimal price;
+
   @Temporal(TemporalType.DATE)
-  @Column(nullable = false)
   private LocalDate publishDate;
 
   @ManyToOne(fetch = FetchType.LAZY)
