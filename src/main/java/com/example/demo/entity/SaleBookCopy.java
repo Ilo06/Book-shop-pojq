@@ -22,9 +22,12 @@ public class SaleBookCopy {
 
   @OneToOne
   @MapsId("bookCopyId")
-  @JoinColumn(name = "book_copy_id", unique = true)
+  @JoinColumn(name = "book_copy_id")
   private BookCopy bookCopy;
 
+  @Column(nullable = false)
+  private int quantity;
+
   @Column(precision = 10, scale = 2, nullable = false)
-  private BigDecimal price;
+  private BigDecimal unitPrice;
 }

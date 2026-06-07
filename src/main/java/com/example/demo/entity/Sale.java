@@ -2,7 +2,6 @@ package com.example.demo.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -29,5 +28,5 @@ public class Sale {
   private LocalDate saleDate;
 
   @OneToMany(mappedBy = "sale")
-  private List<SaleBookCopy> books = new ArrayList<>();
+  private List<SaleBookCopy> books;
 }
