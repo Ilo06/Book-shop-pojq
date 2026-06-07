@@ -1,7 +1,6 @@
 package com.example.demo.endpoint.rest.controller.bookshop;
 
 import com.example.demo.dto.request.CreateSaleDTO;
-import com.example.demo.dto.response.SaleResponse;
 import com.example.demo.service.SaleService;
 import java.time.LocalDate;
 import java.util.UUID;
