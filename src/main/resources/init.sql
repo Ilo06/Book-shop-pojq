@@ -50,7 +50,7 @@ CREATE TABLE sale_book_copy (
 
 CREATE TABLE reservation (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    reservation_datetime TIMESTAMP NOT NULL,
+    reservation_date TIMESTAMP NOT NULL,
     status reservation_status NOT NULL DEFAULT 'PENDING'
 );
 

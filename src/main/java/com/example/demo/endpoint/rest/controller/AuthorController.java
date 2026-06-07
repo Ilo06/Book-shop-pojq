@@ -2,11 +2,13 @@ package com.example.demo.endpoint.rest.controller;
 
 import com.example.demo.dto.request.CreateAuthorDTO;
 import com.example.demo.dto.response.AuthorResponse;
+import com.example.demo.dto.response.PageResponse;
 import com.example.demo.service.AuthorService;
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,8 +21,9 @@ public class AuthorController {
   private final AuthorService authorService;
 
   @GetMapping
-  public ResponseEntity<List<AuthorResponse>> listAuthors() {
-    return ResponseEntity.ok(authorService.findAll());
+  public ResponseEntity<PageResponse<AuthorResponse>> listAuthors(
+      @PageableDefault(size = 20, sort = "lastName") Pageable pageable) {
+    return ResponseEntity.ok(authorService.findAll(pageable));
   }
 
   @GetMapping("/{authorId}")

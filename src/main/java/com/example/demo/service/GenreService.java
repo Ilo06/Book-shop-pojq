@@ -2,13 +2,15 @@ package com.example.demo.service;
 
 import com.example.demo.dto.request.CreateGenreDTO;
 import com.example.demo.dto.response.GenreResponse;
+import com.example.demo.dto.response.PageResponse;
 import com.example.demo.entity.Genre;
 import com.example.demo.exception.ResourceConflictException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.bookshop.GenreRepository;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,8 +20,8 @@ public class GenreService {
 
   private final GenreRepository genreRepository;
 
-  public List<GenreResponse> findAll() {
-    return genreRepository.findAll().stream().map(this::toResponse).toList();
+  public PageResponse<GenreResponse> findAll(Pageable pageable) {
+    return PageResponse.of(genreRepository.findAll(pageable).map(this::toResponse));
   }
 
   public GenreResponse findById(UUID id) {
@@ -51,10 +53,15 @@ public class GenreService {
   @Transactional
   public void delete(UUID id) {
     Genre genre = getOrThrow(id);
-    if (genre.getBooks() != null && !genre.getBooks().isEmpty()) {
-      throw new ResourceConflictException("Cannot delete genre with associated books");
+    try {
+      genreRepository.delete(genre);
+      genreRepository.flush(); // force FK check within the transaction
+    } catch (DataIntegrityViolationException ex) {
+      throw new ResourceConflictException(
+          "Cannot delete genre '"
+              + genre.getName()
+              + "': it is still referenced by one or more books");
     }
-    genreRepository.delete(genre);
   }
 
   private Genre getOrThrow(UUID id) {
