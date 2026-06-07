@@ -39,12 +39,14 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
   @Query(
       """
       SELECT b.id              AS bookId,
-             b.title           AS title
+             b.title           AS title,
+             COUNT(sbc.bookCopy.id) AS totalSold
       FROM Sale s
       JOIN s.books sbc
       JOIN sbc.bookCopy bc
       JOIN bc.book b
       GROUP BY b.id, b.title
+      ORDER BY COUNT(sbc.bookCopy.id) DESC
       """)
   List<TopSellerProjection> findTopSellers(Pageable pageable);
 
