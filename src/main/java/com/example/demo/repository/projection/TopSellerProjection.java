@@ -7,5 +7,5 @@ public interface TopSellerProjection {
 
   String getTitle();
 
-  Long getTotalQuantity();
+  Long getTotalSold();
 }

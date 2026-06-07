@@ -8,6 +8,5 @@ import lombok.Data;
 public class CreateSaleBookCopyDTO {
   private String saleId;
   private String bookCopyId;
-  private double unitPrice;
-  private int quantity;
+  private double price;
 }
