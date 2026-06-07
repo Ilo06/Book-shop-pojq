@@ -36,9 +36,9 @@ public class SaleService {
                 throw new ResourceConflictException("Book copy has already been sold");
               }
             });
-    saleRepository.save(sale);
-    saleBookCopyRepository.saveAll(sale.getBooks());
-    return sale;
+    Sale newSale = saleRepository.save(sale);
+    newSale.setBooks(saleBookCopyRepository.saveAll(sale.getBooks()));
+    return newSale;
   }
 
   public Sale findById(UUID id) {
