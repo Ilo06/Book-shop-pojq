@@ -13,8 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CreateBookCopyDTO {
 
-  @NotNull
-  private UUID bookId;
+  @NotNull private UUID bookId;
 
   @Size(max = 100)
   private String location;

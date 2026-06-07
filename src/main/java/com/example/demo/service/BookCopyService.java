@@ -22,9 +22,8 @@ public class BookCopyService {
   private final BookService bookService;
 
   public List<BookCopyResponse> findAll(BookStatus status) {
-    List<BookCopy> copies = status != null
-        ? bookCopyRepository.findByStatus(status)
-        : bookCopyRepository.findAll();
+    List<BookCopy> copies =
+        status != null ? bookCopyRepository.findByStatus(status) : bookCopyRepository.findAll();
     return copies.stream().map(this::toResponse).toList();
   }
 
@@ -40,11 +39,12 @@ public class BookCopyService {
   @Transactional
   public BookCopyResponse create(CreateBookCopyDTO input) {
     Book book = bookService.getOrThrow(input.getBookId());
-    BookCopy copy = BookCopy.builder()
-        .book(book)
-        .status(input.getStatus() != null ? input.getStatus() : BookStatus.AVAILABLE)
-        .location(input.getLocation())
-        .build();
+    BookCopy copy =
+        BookCopy.builder()
+            .book(book)
+            .status(input.getStatus() != null ? input.getStatus() : BookStatus.AVAILABLE)
+            .location(input.getLocation())
+            .build();
     return toResponse(bookCopyRepository.save(copy));
   }
 
