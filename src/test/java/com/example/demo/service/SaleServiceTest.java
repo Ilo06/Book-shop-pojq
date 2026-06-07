@@ -4,13 +4,19 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.example.demo.dto.request.CreateSaleBookCopyDTO;
+import com.example.demo.dto.request.CreateSaleDTO;
+import com.example.demo.dto.response.SaleResponse;
 import com.example.demo.entity.BookCopy;
 import com.example.demo.entity.Sale;
 import com.example.demo.entity.SaleBookCopy;
+import com.example.demo.entity.keys.SaleBookCopyId;
 import com.example.demo.exception.ResourceConflictException;
 import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.repository.bookshop.BookCopyRepository;
 import com.example.demo.repository.bookshop.SaleBookCopyRepository;
 import com.example.demo.repository.bookshop.SaleRepository;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -31,6 +37,8 @@ class SaleServiceTest {
   @Mock private SaleRepository saleRepository;
 
   @Mock private SaleBookCopyRepository saleBookCopyRepository;
+
+  @Mock private BookCopyRepository bookCopyRepository;
 
   @InjectMocks private SaleService saleService;
 
@@ -61,81 +69,93 @@ class SaleServiceTest {
 
       when(saleRepository.findBySaleDateBetween(from, to)).thenReturn(expectedSales);
 
-      List<Sale> actualSales = saleService.findByDateBetween(from, to);
+      List<SaleResponse> actualSales = saleService.findByDateBetween(from, to);
 
-      assertEquals(expectedSales.size(), actualSales.size());
-      assertEquals(expectedSales.getFirst().getId(), actualSales.getFirst().getId());
+      assertEquals(1, actualSales.size());
+      assertEquals(sampleId, actualSales.getFirst().getId());
       verify(saleRepository, times(1)).findBySaleDateBetween(from, to);
     }
   }
 
   @Nested
-  @DisplayName("Tests for getAll")
-  class GetAllTests {
+  @DisplayName("Tests for create")
+  class CreateTests {
 
     @Test
-    @DisplayName("Should return all existing sales")
-    void shouldReturnAllSales() {
-      List<Sale> expectedSales = List.of(sampleSale);
-      when(saleRepository.findAll()).thenReturn(expectedSales);
-
-      List<Sale> actualSales = saleService.getAll();
-
-      assertEquals(expectedSales.size(), actualSales.size());
-      verify(saleRepository, times(1)).findAll();
-    }
-  }
-
-  @Nested
-  @DisplayName("Tests for save")
-  class SaveTests {
-
-    @Test
-    @DisplayName("Should save sale successfully when book copies are not yet sold")
-    void shouldSaveSaleSuccessfully() {
+    @DisplayName("Should create sale successfully when book copies are not yet sold")
+    void shouldCreateSaleSuccessfully() {
       UUID bookCopyId = UUID.randomUUID();
       BookCopy bookCopy = BookCopy.builder().id(bookCopyId).build();
 
-      SaleBookCopy saleBookCopy = new SaleBookCopy();
-      saleBookCopy.setBookCopy(bookCopy);
+      SaleBookCopyId sbcId = new SaleBookCopyId(sampleId, bookCopyId);
 
-      Sale saleToSave =
-          Sale.builder().saleDate(LocalDate.now()).books(List.of(saleBookCopy)).build();
+      SaleBookCopy saleBookCopy =
+          SaleBookCopy.builder()
+              .saleBookCopyId(sbcId)
+              .sale(sampleSale)
+              .bookCopy(bookCopy)
+              .price(BigDecimal.valueOf(12.99))
+              .build();
+
+      CreateSaleBookCopyDTO itemDto =
+          new CreateSaleBookCopyDTO(bookCopyId, BigDecimal.valueOf(12.99));
+      CreateSaleDTO input = new CreateSaleDTO(LocalDate.now(), List.of(itemDto));
 
       when(saleBookCopyRepository.existsByBookCopyId(bookCopyId)).thenReturn(false);
+      when(bookCopyRepository.findById(bookCopyId)).thenReturn(Optional.of(bookCopy));
       when(saleRepository.save(any(Sale.class))).thenReturn(sampleSale);
       when(saleBookCopyRepository.saveAll(anyList())).thenReturn(List.of(saleBookCopy));
 
-      Sale savedSale = saleService.save(saleToSave);
+      SaleResponse response = saleService.save(input);
 
-      assertNotNull(savedSale);
-      assertEquals(sampleId, savedSale.getId());
+      assertNotNull(response);
+      assertEquals(sampleId, response.getId());
+      assertEquals(1, response.getBooks().size());
+      assertEquals(bookCopyId, response.getBooks().getFirst().getBookCopyId());
+      assertEquals(
+          0, BigDecimal.valueOf(12.99).compareTo(response.getBooks().getFirst().getPrice()));
+
       verify(saleBookCopyRepository, times(1)).existsByBookCopyId(bookCopyId);
-      verify(saleRepository, times(1)).save(saleToSave);
-      verify(saleBookCopyRepository, times(1)).saveAll(saleToSave.getBooks());
+      verify(bookCopyRepository, times(2)).findById(bookCopyId);
+      verify(saleRepository, times(1)).save(any(Sale.class));
+      verify(saleBookCopyRepository, times(1)).saveAll(anyList());
     }
 
     @Test
     @DisplayName("Should throw ResourceConflictException if any book copy has already been sold")
     void shouldThrowConflictExceptionWhenBookAlreadySold() {
       UUID bookCopyId = UUID.randomUUID();
-      BookCopy bookCopy = BookCopy.builder().id(bookCopyId).build();
+      CreateSaleBookCopyDTO itemDto =
+          new CreateSaleBookCopyDTO(bookCopyId, BigDecimal.valueOf(12.99));
+      CreateSaleDTO input = new CreateSaleDTO(LocalDate.now(), List.of(itemDto));
 
-      SaleBookCopy saleBookCopy = new SaleBookCopy();
-      saleBookCopy.setBookCopy(bookCopy);
-
-      Sale saleToSave =
-          Sale.builder().saleDate(LocalDate.now()).books(List.of(saleBookCopy)).build();
-
+      when(bookCopyRepository.findById(bookCopyId)).thenReturn(Optional.of(new BookCopy()));
       when(saleBookCopyRepository.existsByBookCopyId(bookCopyId)).thenReturn(true);
 
       ResourceConflictException exception =
-          assertThrows(ResourceConflictException.class, () -> saleService.save(saleToSave));
+          assertThrows(ResourceConflictException.class, () -> saleService.save(input));
 
-      assertEquals("Book copy has already been sold", exception.getMessage());
+      assertEquals("Book copy with id: " + bookCopyId + " already sold", exception.getMessage());
       verify(saleBookCopyRepository, times(1)).existsByBookCopyId(bookCopyId);
       verify(saleRepository, never()).save(any(Sale.class));
       verify(saleBookCopyRepository, never()).saveAll(anyList());
+    }
+
+    @Test
+    @DisplayName("Should throw ResourceNotFoundException when book copy does not exist")
+    void shouldThrowNotFoundWhenBookCopyMissing() {
+      UUID bookCopyId = UUID.randomUUID();
+      CreateSaleBookCopyDTO itemDto =
+          new CreateSaleBookCopyDTO(bookCopyId, BigDecimal.valueOf(12.99));
+      CreateSaleDTO input = new CreateSaleDTO(LocalDate.now(), List.of(itemDto));
+
+      when(bookCopyRepository.findById(bookCopyId)).thenReturn(Optional.empty());
+
+      ResourceNotFoundException exception =
+          assertThrows(ResourceNotFoundException.class, () -> saleService.save(input));
+
+      assertEquals("Book copy with id: " + bookCopyId + " not found", exception.getMessage());
+      verify(saleRepository, never()).save(any(Sale.class));
     }
   }
 
@@ -144,19 +164,28 @@ class SaleServiceTest {
   class FindByIdTests {
 
     @Test
-    @DisplayName("Should return sale and its associated books if sale exists")
+    @DisplayName("Should return sale response when sale exists")
     void shouldReturnSaleWhenIdExists() {
-      SaleBookCopy mockItem = new SaleBookCopy();
-      List<SaleBookCopy> expectedBooks = List.of(mockItem);
+      UUID bookCopyId = UUID.randomUUID();
+      BookCopy bookCopy = BookCopy.builder().id(bookCopyId).build();
+      SaleBookCopyId sbcId = new SaleBookCopyId(sampleId, bookCopyId);
+      SaleBookCopy saleBookCopy =
+          SaleBookCopy.builder()
+              .saleBookCopyId(sbcId)
+              .bookCopy(bookCopy)
+              .price(BigDecimal.TEN)
+              .build();
 
       when(saleRepository.findById(sampleId)).thenReturn(Optional.of(sampleSale));
-      when(saleBookCopyRepository.findBySaleId(sampleId)).thenReturn(expectedBooks);
+      when(saleBookCopyRepository.findBySaleId(sampleId)).thenReturn(List.of(saleBookCopy));
 
-      Sale foundSale = saleService.findById(sampleId);
+      SaleResponse response = saleService.findById(sampleId);
 
-      assertNotNull(foundSale);
-      assertEquals(sampleId, foundSale.getId());
-      assertEquals(expectedBooks, foundSale.getBooks());
+      assertNotNull(response);
+      assertEquals(sampleId, response.getId());
+      assertEquals(1, response.getBooks().size());
+      assertEquals(bookCopyId, response.getBooks().getFirst().getBookCopyId());
+      assertEquals(0, BigDecimal.TEN.compareTo(response.getBooks().getFirst().getPrice()));
 
       verify(saleRepository, times(1)).findById(sampleId);
       verify(saleBookCopyRepository, times(1)).findBySaleId(sampleId);
