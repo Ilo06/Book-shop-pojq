@@ -1,11 +1,9 @@
 package com.example.demo.dto.request;
 
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -28,10 +26,7 @@ public class CreateBookDTO {
 
   private String description;
 
-  @DecimalMin(value = "0.0", inclusive = true)
-  private BigDecimal price;
-
-  private LocalDate publishDate;
+  @NotNull private LocalDate publishDate;
 
   @NotNull private UUID genreId;
 

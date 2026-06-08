@@ -1,6 +1,5 @@
 package com.example.demo.dto.response;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -18,7 +17,6 @@ public class BookResponse {
   private String title;
   private String isbn;
   private String description;
-  private BigDecimal price;
   private LocalDate publishDate;
   private GenreResponse genre;
   private List<AuthorResponse> authors;

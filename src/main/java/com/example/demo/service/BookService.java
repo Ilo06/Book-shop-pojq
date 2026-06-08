@@ -38,11 +38,6 @@ public class BookService {
     return toResponse(getOrThrow(id));
   }
 
-  public List<BookSummaryResponse> findCopiesByBook(UUID bookId) {
-    getOrThrow(bookId);
-    return List.of(toSummaryResponse(getOrThrow(bookId)));
-  }
-
   @Transactional
   public BookResponse create(CreateBookDTO input) {
     if (bookRepository.existsByIsbn(input.getIsbn())) {
@@ -57,7 +52,6 @@ public class BookService {
             .title(input.getTitle())
             .isbn(input.getIsbn())
             .description(input.getDescription())
-            .price(input.getPrice())
             .publishDate(input.getPublishDate())
             .genre(genre)
             .authors(authors)
@@ -81,7 +75,6 @@ public class BookService {
     book.setTitle(input.getTitle());
     book.setIsbn(input.getIsbn());
     book.setDescription(input.getDescription());
-    book.setPrice(input.getPrice());
     book.setPublishDate(input.getPublishDate());
     book.setGenre(genre);
     book.setAuthors(authors);
@@ -126,7 +119,6 @@ public class BookService {
         .id(book.getId())
         .title(book.getTitle())
         .isbn(book.getIsbn())
-        .price(book.getPrice())
         .genre(
             book.getGenre() != null
                 ? GenreResponse.builder()
@@ -143,7 +135,6 @@ public class BookService {
         .title(book.getTitle())
         .isbn(book.getIsbn())
         .description(book.getDescription())
-        .price(book.getPrice())
         .publishDate(book.getPublishDate())
         .genre(
             book.getGenre() != null

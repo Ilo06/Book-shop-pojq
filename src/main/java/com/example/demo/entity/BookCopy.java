@@ -2,7 +2,7 @@ package com.example.demo.entity;
 
 import com.example.demo.entity.enums.BookStatus;
 import jakarta.persistence.*;
-import java.util.Date;
+import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,10 +29,10 @@ public class BookCopy {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private BookStatus status; // AVAILABLE, SOLD, RESERVED
+  private BookStatus status;
 
-  @Temporal(TemporalType.DATE)
-  private Date acquisitionDate;
+  @Column(precision = 10, scale = 2, nullable = false)
+  private BigDecimal price;
 
   private String location;
 }

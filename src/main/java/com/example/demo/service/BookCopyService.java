@@ -43,6 +43,7 @@ public class BookCopyService {
         BookCopy.builder()
             .book(book)
             .status(input.getStatus() != null ? input.getStatus() : BookStatus.AVAILABLE)
+            .price(input.getPrice())
             .location(input.getLocation())
             .build();
     return toResponse(bookCopyRepository.save(copy));
@@ -53,6 +54,9 @@ public class BookCopyService {
     BookCopy copy = getOrThrow(id);
     if (input.getStatus() != null) {
       copy.setStatus(input.getStatus());
+    }
+    if (input.getPrice() != null) {
+      copy.setPrice(input.getPrice());
     }
     if (input.getLocation() != null) {
       copy.setLocation(input.getLocation());
@@ -77,6 +81,7 @@ public class BookCopyService {
         .id(copy.getId())
         .bookId(copy.getBook() != null ? copy.getBook().getId() : null)
         .status(copy.getStatus())
+        .price(copy.getPrice())
         .location(copy.getLocation())
         .build();
   }
