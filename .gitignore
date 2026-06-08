@@ -1,5 +1,4 @@
 HELP.md
-.env
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
@@ -39,6 +38,6 @@ out/
 
 .aws-sam
 **.toml
-.env
+
 ### Mac OS ###
 .DS_Store
