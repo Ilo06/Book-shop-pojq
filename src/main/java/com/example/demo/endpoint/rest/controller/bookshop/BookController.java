@@ -15,7 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/books")
+@RequestMapping("/books")
 @RequiredArgsConstructor
 public class BookController {
 
@@ -27,33 +27,36 @@ public class BookController {
       @RequestParam(required = false) UUID genreId,
       @RequestParam(required = false) UUID authorId,
       @RequestParam(required = false) String search) {
-    return ResponseEntity.ok(bookService.findAll(genreId, authorId, search));
+    return ResponseEntity.status(HttpStatus.OK)
+            .header("Content-Type", "application/json")
+            .body(bookService.findAll(genreId, authorId, search));
   }
 
   @GetMapping("/{bookId}")
   public ResponseEntity<BookResponse> getBook(@PathVariable UUID bookId) {
-    return ResponseEntity.ok(bookService.findById(bookId));
+    return ResponseEntity.status(HttpStatus.OK)
+            .header("Content-Type", "application/json")
+            .body(bookService.findById(bookId));
   }
 
   @PostMapping
   public ResponseEntity<BookResponse> createBook(@Valid @RequestBody CreateBookDTO input) {
-    return ResponseEntity.status(HttpStatus.CREATED).body(bookService.create(input));
+    return ResponseEntity.status(HttpStatus.CREATED)
+            .header("Content-Type", "application/json")
+            .body(bookService.create(input));
   }
 
   @PutMapping("/{bookId}")
   public ResponseEntity<BookResponse> updateBook(
       @PathVariable UUID bookId, @Valid @RequestBody CreateBookDTO input) {
-    return ResponseEntity.ok(bookService.update(bookId, input));
+    return ResponseEntity.status(HttpStatus.OK)
+            .header("Content-Type", "application/json")
+            .body(bookService.update(bookId, input));
   }
 
   @DeleteMapping("/{bookId}")
   public ResponseEntity<Void> deleteBook(@PathVariable UUID bookId) {
     bookService.delete(bookId);
-    return ResponseEntity.noContent().build();
-  }
-
-  @GetMapping("/{bookId}/copies")
-  public ResponseEntity<List<BookCopyResponse>> listCopiesByBook(@PathVariable UUID bookId) {
-    return ResponseEntity.ok(bookCopyService.findByBookId(bookId));
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 }

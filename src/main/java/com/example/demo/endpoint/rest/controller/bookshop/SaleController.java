@@ -19,16 +19,22 @@ public class SaleController {
   public ResponseEntity<?> getAll(
       @RequestParam(required = false) LocalDate from,
       @RequestParam(required = false) LocalDate to) {
-    return ResponseEntity.status(HttpStatus.OK).body(saleService.findByDateBetween(from, to));
+    return ResponseEntity.status(HttpStatus.OK)
+            .header("Content-Type", "application/json")
+            .body(saleService.findByDateBetween(from, to));
   }
 
   @PostMapping
   public ResponseEntity<?> save(@RequestBody CreateSaleDTO sale) {
-    return ResponseEntity.status(HttpStatus.CREATED).body(saleService.save(sale));
+    return ResponseEntity.status(HttpStatus.CREATED)
+            .header("Content-Type", "application/json")
+            .body(saleService.save(sale));
   }
 
   @GetMapping("/{saleId}")
   public ResponseEntity<?> getById(@PathVariable UUID saleId) {
-    return ResponseEntity.status(HttpStatus.OK).body(saleService.findById(saleId));
+    return ResponseEntity.status(HttpStatus.OK)
+            .header("Content-Type", "application/json")
+            .body(saleService.findById(saleId));
   }
 }
