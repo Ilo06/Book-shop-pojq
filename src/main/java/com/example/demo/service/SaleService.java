@@ -1,6 +1,5 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.request.CreateSaleBookCopyDTO;
 import com.example.demo.dto.request.CreateSaleDTO;
 import com.example.demo.dto.response.SaleBookCopyResponse;
 import com.example.demo.dto.response.SaleResponse;
@@ -37,16 +36,16 @@ public class SaleService {
 
   @Transactional
   public SaleResponse save(@Valid CreateSaleDTO sale) {
-    sale.getBooks()
+    sale.getBookCopyIds()
         .forEach(
-            bookCopy -> {
-              if (bookCopyRepository.findById(bookCopy.getBookCopyId()).isEmpty()) {
+            bookCopyId -> {
+              if (bookCopyRepository.findById(bookCopyId).isEmpty()) {
                 throw new ResourceNotFoundException(
-                    "Book copy with id: " + bookCopy.getBookCopyId() + " not found");
+                    "Book copy with id: " + bookCopyId + " not found");
               }
-              if (saleBookCopyRepository.existsByBookCopyId(bookCopy.getBookCopyId())) {
+              if (saleBookCopyRepository.existsByBookCopyId(bookCopyId)) {
                 throw new ResourceConflictException(
-                    "Book copy with id: " + bookCopy.getBookCopyId() + " already sold");
+                    "Book copy with id: " + bookCopyId + " already sold");
               }
             });
 
@@ -54,10 +53,9 @@ public class SaleService {
     Sale newSale = saleRepository.save(saleToSave);
 
     List<SaleBookCopy> saleItems =
-        sale.getBooks().stream().map(dto -> createSaleBookCopy(newSale, dto)).toList();
+        sale.getBookCopyIds().stream().map(bookCopyId -> createSaleBookCopy(newSale, bookCopyId)).toList();
 
-    List<SaleBookCopy> savedItems = saleBookCopyRepository.saveAll(saleItems);
-    newSale.setBooks(savedItems);
+    newSale.setBooks(saleBookCopyRepository.saveAll(saleItems));
     return toResponse(newSale);
   }
 
@@ -71,20 +69,19 @@ public class SaleService {
     return toResponse(sale);
   }
 
-  private SaleBookCopy createSaleBookCopy(Sale sale, CreateSaleBookCopyDTO saleBookCopyDTO) {
+  private SaleBookCopy createSaleBookCopy(Sale sale, UUID bookCopyId) {
     BookCopy bookCopy =
         bookCopyRepository
-            .findById(saleBookCopyDTO.getBookCopyId())
+            .findById(bookCopyId)
             .orElseThrow(
                 () ->
                     new ResourceNotFoundException(
-                        "Book copy with id: " + saleBookCopyDTO.getBookCopyId() + " not found"));
+                        "Book copy with id: " + bookCopyId + " not found"));
 
     return SaleBookCopy.builder()
         .saleBookCopyId(new SaleBookCopyId(sale.getId(), bookCopy.getId()))
         .sale(sale)
         .bookCopy(bookCopy)
-        .price(saleBookCopyDTO.getPrice())
         .build();
   }
 
@@ -95,7 +92,6 @@ public class SaleService {
                 saleBookCopy ->
                     SaleBookCopyResponse.builder()
                         .bookCopyId(saleBookCopy.getBookCopy().getId())
-                        .price(saleBookCopy.getPrice())
                         .build())
             .toList();
 
