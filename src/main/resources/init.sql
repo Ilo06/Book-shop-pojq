@@ -35,18 +35,18 @@ CREATE TABLE book (
     isbn            VARCHAR(13)     NOT NULL UNIQUE CHECK (length(isbn) IN (10, 13)),
     description     TEXT,
     publish_date    DATE            NOT NULL,
-    genre_id        UUID            NOT NULL REFERENCES genre(id)
+    genre_id        UUID            NOT NULL REFERENCES genre(id) ON DELETE SET NULL
 );
 
 CREATE TABLE book_author (
-    book_id     UUID NOT NULL REFERENCES book(id),
-    author_id   UUID NOT NULL REFERENCES author(id),
+    book_id     UUID NOT NULL REFERENCES book(id) ON DELETE CASCADE,
+    author_id   UUID NOT NULL REFERENCES author(id) ON DELETE CASCADE,
     PRIMARY KEY (book_id, author_id)
 );
 
 CREATE TABLE book_copy (
     id          UUID            DEFAULT gen_random_uuid() PRIMARY KEY,
-    book_id     UUID            NOT NULL REFERENCES book(id),
+    book_id     UUID            NOT NULL REFERENCES book(id) ON DELETE CASCADE,
     status      book_status     NOT NULL,
     type        book_copy_type  NOT NULL,
     price       DECIMAL(10, 2)  NOT NULL,
@@ -59,8 +59,8 @@ CREATE TABLE sale (
 );
 
 CREATE TABLE sale_book_copy (
-    sale_id         UUID   NOT NULL REFERENCES sale(id),
-    book_copy_id    UUID   NOT NULL REFERENCES book_copy(id),
+    sale_id         UUID   NOT NULL REFERENCES sale(id) ON DELETE CASCADE,
+    book_copy_id    UUID   NOT NULL REFERENCES book_copy(id) ON DELETE CASCADE,
     PRIMARY KEY (sale_id, book_copy_id)
 );
 
@@ -71,8 +71,8 @@ CREATE TABLE reservation (
 );
 
 CREATE TABLE reservation_book (
-    reservation_id  UUID    NOT NULL REFERENCES reservation(id),
-    book_copy_id    UUID    NOT NULL REFERENCES book_copy(id),
+    reservation_id  UUID    NOT NULL REFERENCES reservation(id) ON DELETE CASCADE,
+    book_copy_id    UUID    NOT NULL REFERENCES book_copy(id) ON DELETE CASCADE,
     quantity        INTEGER NOT NULL,
     PRIMARY KEY (reservation_id, book_copy_id)
 );
@@ -83,8 +83,8 @@ CREATE TABLE arrival (
 );
 
 CREATE TABLE arrival_book (
-    arrival_id      UUID    NOT NULL REFERENCES arrival(id),
-    book_copy_id    UUID    NOT NULL REFERENCES book_copy(id),
+    arrival_id      UUID    NOT NULL REFERENCES arrival(id) ON DELETE CASCADE,
+    book_copy_id    UUID    NOT NULL REFERENCES book_copy(id) ON DELETE CASCADE,
     quantity        INTEGER NOT NULL,
     PRIMARY KEY (arrival_id, book_copy_id)
 );
