@@ -80,6 +80,7 @@ public class BookCopyService {
     return BookCopyResponse.builder()
         .id(copy.getId())
         .bookId(copy.getBook() != null ? copy.getBook().getId() : null)
+        .type(copy.getType())
         .status(copy.getStatus())
         .price(copy.getPrice())
         .location(copy.getLocation())

@@ -43,10 +43,6 @@ public class SaleService {
                 throw new ResourceNotFoundException(
                     "Book copy with id: " + bookCopyId + " not found");
               }
-              if (saleBookCopyRepository.existsByBookCopyId(bookCopyId)) {
-                throw new ResourceConflictException(
-                    "Book copy with id: " + bookCopyId + " already sold");
-              }
             });
 
     Sale saleToSave = Sale.builder().saleDate(sale.getSaleDate()).build();
@@ -94,6 +90,7 @@ public class SaleService {
                 saleBookCopy ->
                     SaleBookCopyResponse.builder()
                         .bookCopyId(saleBookCopy.getBookCopy().getId())
+                            .price(saleBookCopy.getBookCopy().getPrice())
                         .build())
             .toList();
 
