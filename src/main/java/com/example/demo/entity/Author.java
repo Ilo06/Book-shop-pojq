@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +29,7 @@ public class Author {
   @Column(nullable = false)
   private String lastName;
 
+  @JsonIgnore
   @ManyToMany(mappedBy = "authors", fetch = FetchType.LAZY)
   private List<Book> books;
 }

@@ -25,7 +25,4 @@ public class SaleBookCopy {
   @MapsId("bookCopyId")
   @JoinColumn(name = "book_copy_id", unique = true)
   private BookCopy bookCopy;
-
-  @Column(precision = 10, scale = 2, nullable = false)
-  private BigDecimal price;
 }

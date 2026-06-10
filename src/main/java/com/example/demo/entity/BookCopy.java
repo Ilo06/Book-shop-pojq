@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.example.demo.entity.enums.BookCopyType;
 import com.example.demo.entity.enums.BookStatus;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -31,8 +32,13 @@ public class BookCopy {
   @Column(nullable = false)
   private BookStatus status;
 
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private BookCopyType type;
+
   @Column(precision = 10, scale = 2, nullable = false)
   private BigDecimal price;
 
+  @Column(length = 10, nullable = false)
   private String location;
 }
