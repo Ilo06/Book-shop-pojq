@@ -53,7 +53,9 @@ public class SaleService {
     Sale newSale = saleRepository.save(saleToSave);
 
     List<SaleBookCopy> saleItems =
-        sale.getBookCopyIds().stream().map(bookCopyId -> createSaleBookCopy(newSale, bookCopyId)).toList();
+        sale.getBookCopyIds().stream()
+            .map(bookCopyId -> createSaleBookCopy(newSale, bookCopyId))
+            .toList();
 
     newSale.setBooks(saleBookCopyRepository.saveAll(saleItems));
     return toResponse(newSale);

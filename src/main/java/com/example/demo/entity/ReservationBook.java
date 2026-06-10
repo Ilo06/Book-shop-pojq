@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Check;
 
 @Entity
 @Table(name = "reservation_book")

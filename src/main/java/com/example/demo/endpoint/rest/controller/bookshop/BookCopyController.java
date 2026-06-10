@@ -22,7 +22,8 @@ public class BookCopyController {
   private final BookService bookService;
   private final BookCopyService bookCopyService;
 
-  @ModelAttribute // Just found out you use this instead of repeating the same check for each request
+  @ModelAttribute // Just found out you use this instead of repeating the same check for each
+                  // request
   private void checkIfBookExists(@PathVariable UUID bookId) {
     bookService.getOrThrow(bookId);
   }
@@ -31,31 +32,31 @@ public class BookCopyController {
   public ResponseEntity<List<BookCopyResponse>> listBookCopies(
       @RequestParam(required = false) BookStatus status) {
     return ResponseEntity.status(HttpStatus.OK)
-            .header("Content-Type", "application/json")
-            .body(bookCopyService.findAll(status));
+        .header("Content-Type", "application/json")
+        .body(bookCopyService.findAll(status));
   }
 
   @GetMapping("/{copyId}")
   public ResponseEntity<BookCopyResponse> getBookCopy(@PathVariable UUID copyId) {
     return ResponseEntity.status(HttpStatus.OK)
-            .header("Content-Type", "application/json")
-            .body(bookCopyService.findById(copyId));
+        .header("Content-Type", "application/json")
+        .body(bookCopyService.findById(copyId));
   }
 
   @PostMapping
   public ResponseEntity<BookCopyResponse> createBookCopy(
       @Valid @RequestBody CreateBookCopyDTO input) {
     return ResponseEntity.status(HttpStatus.CREATED)
-            .header("Content-Type", "application/json")
-            .body(bookCopyService.create(input));
+        .header("Content-Type", "application/json")
+        .body(bookCopyService.create(input));
   }
 
   @PatchMapping("/{copyId}")
   public ResponseEntity<BookCopyResponse> patchBookCopy(
       @PathVariable UUID copyId, @Valid @RequestBody PatchBookCopyDTO input) {
     return ResponseEntity.status(HttpStatus.OK)
-            .header("Content-Type", "application/json")
-            .body(bookCopyService.patch(copyId, input));
+        .header("Content-Type", "application/json")
+        .body(bookCopyService.patch(copyId, input));
   }
 
   @DeleteMapping("/{copyId}")

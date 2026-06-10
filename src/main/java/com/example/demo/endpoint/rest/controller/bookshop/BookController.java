@@ -1,7 +1,6 @@
 package com.example.demo.endpoint.rest.controller.bookshop;
 
 import com.example.demo.dto.request.CreateBookDTO;
-import com.example.demo.dto.response.BookCopyResponse;
 import com.example.demo.dto.response.BookResponse;
 import com.example.demo.dto.response.BookSummaryResponse;
 import com.example.demo.service.BookCopyService;
@@ -28,30 +27,30 @@ public class BookController {
       @RequestParam(required = false) UUID authorId,
       @RequestParam(required = false) String search) {
     return ResponseEntity.status(HttpStatus.OK)
-            .header("Content-Type", "application/json")
-            .body(bookService.findAll(genreId, authorId, search));
+        .header("Content-Type", "application/json")
+        .body(bookService.findAll(genreId, authorId, search));
   }
 
   @GetMapping("/{bookId}")
   public ResponseEntity<BookResponse> getBook(@PathVariable UUID bookId) {
     return ResponseEntity.status(HttpStatus.OK)
-            .header("Content-Type", "application/json")
-            .body(bookService.findById(bookId));
+        .header("Content-Type", "application/json")
+        .body(bookService.findById(bookId));
   }
 
   @PostMapping
   public ResponseEntity<BookResponse> createBook(@Valid @RequestBody CreateBookDTO input) {
     return ResponseEntity.status(HttpStatus.CREATED)
-            .header("Content-Type", "application/json")
-            .body(bookService.create(input));
+        .header("Content-Type", "application/json")
+        .body(bookService.create(input));
   }
 
   @PutMapping("/{bookId}")
   public ResponseEntity<BookResponse> updateBook(
       @PathVariable UUID bookId, @Valid @RequestBody CreateBookDTO input) {
     return ResponseEntity.status(HttpStatus.OK)
-            .header("Content-Type", "application/json")
-            .body(bookService.update(bookId, input));
+        .header("Content-Type", "application/json")
+        .body(bookService.update(bookId, input));
   }
 
   @DeleteMapping("/{bookId}")

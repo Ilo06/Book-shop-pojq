@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
-
-import jakarta.ws.rs.DefaultValue;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
