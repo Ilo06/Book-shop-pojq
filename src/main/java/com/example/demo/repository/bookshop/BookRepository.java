@@ -3,9 +3,6 @@ package com.example.demo.repository.bookshop;
 import com.example.demo.entity.Book;
 import java.util.List;
 import java.util.UUID;
-
-import org.hibernate.annotations.JdbcType;
-import org.hibernate.type.descriptor.jdbc.UUIDJdbcType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

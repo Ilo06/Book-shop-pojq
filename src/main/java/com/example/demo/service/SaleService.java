@@ -7,7 +7,6 @@ import com.example.demo.entity.BookCopy;
 import com.example.demo.entity.Sale;
 import com.example.demo.entity.SaleBookCopy;
 import com.example.demo.entity.keys.SaleBookCopyId;
-import com.example.demo.exception.ResourceConflictException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.bookshop.BookCopyRepository;
 import com.example.demo.repository.bookshop.SaleBookCopyRepository;
@@ -90,7 +89,7 @@ public class SaleService {
                 saleBookCopy ->
                     SaleBookCopyResponse.builder()
                         .bookCopyId(saleBookCopy.getBookCopy().getId())
-                            .price(saleBookCopy.getBookCopy().getPrice())
+                        .price(saleBookCopy.getBookCopy().getPrice())
                         .build())
             .toList();
 

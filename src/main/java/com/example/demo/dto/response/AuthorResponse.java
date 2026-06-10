@@ -1,8 +1,7 @@
 package com.example.demo.dto.response;
 
-import java.util.UUID;
-
 import com.example.demo.entity.Author;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,9 +18,9 @@ public class AuthorResponse {
 
   public static AuthorResponse from(Author author) {
     return AuthorResponse.builder()
-            .id(author.getId())
-            .firstName(author.getFirstName())
-            .lastName(author.getLastName())
-            .build();
+        .id(author.getId())
+        .firstName(author.getFirstName())
+        .lastName(author.getLastName())
+        .build();
   }
 }
