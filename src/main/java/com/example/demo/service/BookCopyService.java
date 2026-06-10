@@ -43,6 +43,7 @@ public class BookCopyService {
         BookCopy.builder()
             .book(book)
             .status(input.getStatus() != null ? input.getStatus() : BookStatus.AVAILABLE)
+            .type(input.getType())
             .price(input.getPrice())
             .location(input.getLocation())
             .build();

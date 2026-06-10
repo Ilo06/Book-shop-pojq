@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,7 +31,8 @@ public class Reservation {
   private LocalDateTime reservationDate;
 
   @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
+  @Column(nullable = false, columnDefinition = "reservation_status")
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   private ReservationStatus status; // PENDING, CONFIRMED, CANCELLED
 
   @OneToMany(mappedBy = "reservation")

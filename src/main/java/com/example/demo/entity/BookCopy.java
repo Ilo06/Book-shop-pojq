@@ -5,6 +5,8 @@ import com.example.demo.entity.enums.BookStatus;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,11 +31,13 @@ public class BookCopy {
   private Book book;
 
   @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
+  @Column(nullable = false, columnDefinition = "book_status")
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   private BookStatus status;
 
   @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
+  @Column(nullable = false, columnDefinition = "book_copy_type")
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   private BookCopyType type;
 
   @Column(precision = 10, scale = 2, nullable = false)
