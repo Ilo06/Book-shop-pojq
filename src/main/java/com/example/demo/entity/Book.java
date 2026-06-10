@@ -29,7 +29,6 @@ public class Book {
   @Column(unique = true, nullable = false)
   private String isbn;
 
-  @Lob
   @Column(columnDefinition = "TEXT")
   private String description;
 
