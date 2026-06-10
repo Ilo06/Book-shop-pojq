@@ -4,10 +4,11 @@ import java.time.LocalDate;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.jetbrains.annotations.NotNull;
 
 @Data
 @AllArgsConstructor
 public class CreateArrivalDTO {
-  private LocalDate arrivalDate;
-  private List<CreateArrivalBookDTO> books;
+  @NotNull private LocalDate arrivalDate;
+  @NotNull private List<QuantifiedBookCopyDTO> books;
 }

@@ -30,5 +30,5 @@ public class CreateBookDTO {
 
   @NotNull private UUID genreId;
 
-  private List<UUID> authorIds;
+  @NotNull private List<UUID> authorIds;
 }
