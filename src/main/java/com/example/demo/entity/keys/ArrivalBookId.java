@@ -13,5 +13,5 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode
 public class ArrivalBookId implements Serializable {
   private UUID arrivalId;
-  private UUID bookId;
+  private UUID bookCopyId;
 }

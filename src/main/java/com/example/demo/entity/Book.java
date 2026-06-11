@@ -29,10 +29,10 @@ public class Book {
   @Column(unique = true, nullable = false)
   private String isbn;
 
-  @Lob
   @Column(columnDefinition = "TEXT")
   private String description;
 
+  @Column(nullable = false)
   private LocalDate publishDate;
 
   @ManyToOne(fetch = FetchType.LAZY)

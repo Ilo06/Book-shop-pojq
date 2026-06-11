@@ -43,6 +43,7 @@ public class BookCopyService {
         BookCopy.builder()
             .book(book)
             .status(input.getStatus() != null ? input.getStatus() : BookStatus.AVAILABLE)
+            .type(input.getType())
             .price(input.getPrice())
             .location(input.getLocation())
             .build();
@@ -80,6 +81,7 @@ public class BookCopyService {
     return BookCopyResponse.builder()
         .id(copy.getId())
         .bookId(copy.getBook() != null ? copy.getBook().getId() : null)
+        .type(copy.getType())
         .status(copy.getStatus())
         .price(copy.getPrice())
         .location(copy.getLocation())

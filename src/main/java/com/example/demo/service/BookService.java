@@ -16,6 +16,7 @@ import com.example.demo.repository.bookshop.GenreRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,9 +30,7 @@ public class BookService {
   private final AuthorRepository authorRepository;
 
   public List<BookSummaryResponse> findAll(UUID genreId, UUID authorId, String search) {
-    return bookRepository.findByFilters(genreId, authorId, search).stream()
-        .map(this::toSummaryResponse)
-        .toList();
+    return bookRepository.findAll().stream().map(this::toSummaryResponse).toList();
   }
 
   public BookResponse findById(UUID id) {
@@ -111,7 +110,7 @@ public class BookService {
                     .findById(aId)
                     .orElseThrow(
                         () -> new ResourceNotFoundException("Author not found with id: " + aId)))
-        .toList();
+        .collect(Collectors.toList());
   }
 
   private BookSummaryResponse toSummaryResponse(Book book) {

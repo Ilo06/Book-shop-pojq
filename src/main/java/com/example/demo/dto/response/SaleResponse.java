@@ -1,17 +1,19 @@
-package com.example.demo.dto.request;
+package com.example.demo.dto.response;
 
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateSaleDTO {
-  @NotNull private LocalDate saleDate;
-  @NotNull private List<UUID> bookCopyIds;
+public class SaleResponse {
+  private UUID id;
+  private LocalDate saleDate;
+  private List<SaleBookCopyResponse> books;
 }

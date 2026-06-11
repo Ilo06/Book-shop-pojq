@@ -20,10 +20,10 @@ public interface BookRepository extends JpaRepository<Book, UUID> {
         AND (:authorId IS NULL OR EXISTS (
               SELECT 1 FROM b.authors a WHERE a.id = :authorId))
         AND (:search   IS NULL OR
-              LOWER(b.title) LIKE LOWER(CONCAT('%', :search, '%')) OR
-              LOWER(b.isbn)  LIKE LOWER(CONCAT('%', :search, '%')))
+              CAST(b.title AS string) ILIKE CAST(CONCAT('%', :search, '%') AS string ) OR
+              CAST(b.isbn AS string)  ILIKE CAST(CONCAT('%', :search, '%') AS string))
       """)
-  List<Book> findByFilters(
+  List<Book> findByFilters( // This won't work, i cant figure out why
       @Param("genreId") UUID genreId,
       @Param("authorId") UUID authorId,
       @Param("search") String search);
