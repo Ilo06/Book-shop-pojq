@@ -19,18 +19,20 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
 
   @Query(
       """
-      SELECT COALESCE(SUM(sbc.price), 0)
+      SELECT COALESCE(SUM(bc.price), 0)
       FROM Sale s
       JOIN s.books sbc
+      JOIN sbc.bookCopy bc
       WHERE s.saleDate = CURRENT_DATE
       """)
   BigDecimal findTodayRevenue();
 
   @Query(
       """
-      SELECT COALESCE(SUM(sbc.price), 0)
+      SELECT COALESCE(SUM(bc.price), 0)
       FROM Sale s
       JOIN s.books sbc
+      JOIN sbc.bookCopy bc
       WHERE EXTRACT(YEAR  FROM s.saleDate) = EXTRACT(YEAR  FROM CURRENT_DATE)
         AND EXTRACT(MONTH FROM s.saleDate) = EXTRACT(MONTH FROM CURRENT_DATE)
       """)
@@ -54,7 +56,7 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
       """
       SELECT g.id                              AS genreId,
              g.name                            AS genreName,
-             SUM(sbc.price) AS totalRevenue
+             SUM(bc.price) AS totalRevenue
       FROM Sale s
       JOIN s.books sbc
       JOIN sbc.bookCopy bc

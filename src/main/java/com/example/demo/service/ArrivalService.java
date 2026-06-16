@@ -5,12 +5,12 @@ import com.example.demo.dto.response.ArrivalBookResponse;
 import com.example.demo.dto.response.ArrivalResponse;
 import com.example.demo.entity.Arrival;
 import com.example.demo.entity.ArrivalBook;
-import com.example.demo.entity.Book;
+import com.example.demo.entity.BookCopy;
 import com.example.demo.entity.keys.ArrivalBookId;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.bookshop.ArrivalBookRepository;
 import com.example.demo.repository.bookshop.ArrivalRepository;
-import com.example.demo.repository.bookshop.BookRepository;
+import com.example.demo.repository.bookshop.BookCopyRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -26,7 +26,7 @@ public class ArrivalService {
 
   private final ArrivalRepository arrivalRepository;
   private final ArrivalBookRepository arrivalBookRepository;
-  private final BookRepository bookRepository;
+  private final BookCopyRepository bookCopyRepository;
 
   public Page<ArrivalResponse> findAll(Pageable pageable) {
     return arrivalRepository.findAll(pageable).map(this::toResponse);
@@ -45,15 +45,15 @@ public class ArrivalService {
     List<ArrivalBook> books = new ArrayList<>();
     if (input.getBooks() != null) {
       for (var bookInput : input.getBooks()) {
-        Book book =
-            bookRepository
-                .findById(bookInput.getBookId())
+        BookCopy bookCopy =
+            bookCopyRepository
+                .findById(bookInput.getBookCopyId())
                 .orElseThrow(
                     () ->
                         new ResourceNotFoundException(
-                            "Book not found with id: " + bookInput.getBookId()));
-        ArrivalBookId id = new ArrivalBookId(arrival.getId(), book.getId());
-        ArrivalBook ab = new ArrivalBook(id, arrival, book, bookInput.getQuantity());
+                            "Book copy not found with id: " + bookInput.getBookCopyId()));
+        ArrivalBookId id = new ArrivalBookId(arrival.getId(), bookCopy.getId());
+        ArrivalBook ab = new ArrivalBook(id, arrival, bookCopy, bookInput.getQuantity());
         books.add(arrivalBookRepository.save(ab));
       }
     }
@@ -87,8 +87,8 @@ public class ArrivalService {
                 .map(
                     ab ->
                         ArrivalBookResponse.builder()
-                            .bookId(ab.getBook().getId())
-                            .bookTitle(ab.getBook().getTitle())
+                            .bookId(ab.getBook().getBook().getId())
+                            .bookTitle(ab.getBook().getBook().getTitle())
                             .quantity(ab.getQuantity())
                             .build())
                 .toList())

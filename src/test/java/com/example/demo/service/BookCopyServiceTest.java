@@ -8,6 +8,7 @@ import com.example.demo.dto.request.CreateBookCopyDTO;
 import com.example.demo.dto.request.PatchBookCopyDTO;
 import com.example.demo.entity.Book;
 import com.example.demo.entity.BookCopy;
+import com.example.demo.entity.enums.BookCopyType;
 import com.example.demo.entity.enums.BookStatus;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.bookshop.BookCopyRepository;
@@ -38,6 +39,7 @@ class BookCopyServiceTest {
             .id(UUID.randomUUID())
             .book(book)
             .status(BookStatus.AVAILABLE)
+            .type(BookCopyType.PAPERBACK)
             .price(BigDecimal.TEN)
             .build();
     when(bookService.getOrThrow(bookId)).thenReturn(book);
@@ -55,6 +57,7 @@ class BookCopyServiceTest {
         BookCopy.builder()
             .id(UUID.randomUUID())
             .status(BookStatus.AVAILABLE)
+            .type(BookCopyType.HARDBACK)
             .price(BigDecimal.TEN)
             .build();
     when(bookCopyRepository.findByStatus(BookStatus.AVAILABLE)).thenReturn(List.of(copy));
@@ -74,6 +77,7 @@ class BookCopyServiceTest {
             .id(UUID.randomUUID())
             .book(book)
             .status(BookStatus.AVAILABLE)
+            .type(BookCopyType.POCKET)
             .price(BigDecimal.TEN)
             .build();
     when(bookService.getOrThrow(bookId)).thenReturn(book);
@@ -92,6 +96,7 @@ class BookCopyServiceTest {
         BookCopy.builder()
             .id(UUID.randomUUID())
             .status(BookStatus.AVAILABLE)
+            .type(BookCopyType.PAPERBACK)
             .price(BigDecimal.TEN)
             .build();
     when(bookCopyRepository.findAll()).thenReturn(List.of(copy));
@@ -105,7 +110,13 @@ class BookCopyServiceTest {
   @Test
   void findById_returnsCopy() {
     var id = UUID.randomUUID();
-    var copy = BookCopy.builder().id(id).status(BookStatus.AVAILABLE).price(BigDecimal.TEN).build();
+    var copy =
+        BookCopy.builder()
+            .id(id)
+            .status(BookStatus.AVAILABLE)
+            .type(BookCopyType.PAPERBACK)
+            .price(BigDecimal.TEN)
+            .build();
     when(bookCopyRepository.findById(id)).thenReturn(Optional.of(copy));
 
     var result = bookCopyService.findById(id);
@@ -117,7 +128,9 @@ class BookCopyServiceTest {
   void create_savesCopy() {
     var bookId = UUID.randomUUID();
     var book = Book.builder().id(bookId).build();
-    var input = new CreateBookCopyDTO(bookId, BigDecimal.valueOf(15), "A1", BookStatus.AVAILABLE);
+    var input =
+        new CreateBookCopyDTO(
+            bookId, BookCopyType.PAPERBACK, BigDecimal.valueOf(15), "A1", BookStatus.AVAILABLE);
     when(bookService.getOrThrow(bookId)).thenReturn(book);
     when(bookCopyRepository.save(any(BookCopy.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
@@ -130,7 +143,13 @@ class BookCopyServiceTest {
   @Test
   void patch_updatesCopy() {
     var id = UUID.randomUUID();
-    var copy = BookCopy.builder().id(id).status(BookStatus.AVAILABLE).price(BigDecimal.TEN).build();
+    var copy =
+        BookCopy.builder()
+            .id(id)
+            .status(BookStatus.AVAILABLE)
+            .type(BookCopyType.HARDBACK)
+            .price(BigDecimal.TEN)
+            .build();
     var input = new PatchBookCopyDTO(BookStatus.SOLD, BigDecimal.valueOf(20), "B2");
     when(bookCopyRepository.findById(id)).thenReturn(Optional.of(copy));
     when(bookCopyRepository.save(any(BookCopy.class)))

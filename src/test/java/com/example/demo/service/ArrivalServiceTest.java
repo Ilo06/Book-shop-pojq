@@ -4,14 +4,15 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import com.example.demo.dto.request.CreateArrivalBookDTO;
 import com.example.demo.dto.request.CreateArrivalDTO;
+import com.example.demo.dto.request.QuantifiedBookCopyDTO;
 import com.example.demo.entity.Arrival;
 import com.example.demo.entity.ArrivalBook;
 import com.example.demo.entity.Book;
+import com.example.demo.entity.BookCopy;
 import com.example.demo.repository.bookshop.ArrivalBookRepository;
 import com.example.demo.repository.bookshop.ArrivalRepository;
-import com.example.demo.repository.bookshop.BookRepository;
+import com.example.demo.repository.bookshop.BookCopyRepository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +29,7 @@ class ArrivalServiceTest {
 
   @Mock private ArrivalRepository arrivalRepository;
   @Mock private ArrivalBookRepository arrivalBookRepository;
-  @Mock private BookRepository bookRepository;
+  @Mock private BookCopyRepository bookCopyRepository;
 
   @InjectMocks private ArrivalService arrivalService;
 
@@ -58,11 +59,13 @@ class ArrivalServiceTest {
 
   @Test
   void create_savesArrivalWithBooks() {
-    var bookId = UUID.randomUUID();
-    var book = Book.builder().id(bookId).title("Test Book").build();
-    var input = new CreateArrivalDTO(LocalDate.now(), List.of(new CreateArrivalBookDTO(bookId, 5)));
+    var bookCopyId = UUID.randomUUID();
+    var book = Book.builder().id(UUID.randomUUID()).title("Test Book").build();
+    var bookCopy = BookCopy.builder().id(bookCopyId).book(book).build();
+    var input =
+        new CreateArrivalDTO(LocalDate.now(), List.of(new QuantifiedBookCopyDTO(bookCopyId, 5)));
 
-    when(bookRepository.findById(bookId)).thenReturn(Optional.of(book));
+    when(bookCopyRepository.findById(bookCopyId)).thenReturn(Optional.of(bookCopy));
     when(arrivalRepository.save(any(Arrival.class)))
         .thenAnswer(
             invocation -> {

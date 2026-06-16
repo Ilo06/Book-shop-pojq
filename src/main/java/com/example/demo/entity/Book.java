@@ -32,6 +32,7 @@ public class Book {
   @Column(columnDefinition = "TEXT")
   private String description;
 
+  @Column(nullable = false)
   private LocalDate publishDate;
 
   @ManyToOne(fetch = FetchType.LAZY)

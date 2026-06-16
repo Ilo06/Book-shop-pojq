@@ -16,16 +16,15 @@ public interface BookRepository extends JpaRepository<Book, UUID> {
   @Query(
       """
       SELECT b FROM Book b
-      WHERE (:genreFlag = false OR b.genre.id = :genreId)
-        AND (:authorFlag = false OR EXISTS (
+      WHERE (:genreId IS NULL OR b.genre.id = :genreId)
+        AND (:authorId IS NULL OR EXISTS (
               SELECT 1 FROM b.authors a WHERE a.id = :authorId))
-      AND (:searchFlag = false OR LOWER(b.title) LIKE :pattern OR LOWER(b.isbn) LIKE :pattern)
+        AND (:search IS NULL OR
+              LOWER(b.title) LIKE LOWER(CONCAT('%', :search, '%')) OR
+              LOWER(b.isbn) LIKE LOWER(CONCAT('%', :search, '%')))
       """)
   List<Book> findByFilters(
       @Param("genreId") UUID genreId,
       @Param("authorId") UUID authorId,
-      @Param("pattern") String pattern,
-      @Param("genreFlag") boolean genreFlag,
-      @Param("authorFlag") boolean authorFlag,
-      @Param("searchFlag") boolean searchFlag);
+      @Param("search") String search);
 }

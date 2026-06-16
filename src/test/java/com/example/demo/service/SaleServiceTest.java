@@ -1,10 +1,13 @@
 package com.example.demo.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.example.demo.entity.BookCopy;
 import com.example.demo.entity.Sale;
 import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.repository.bookshop.BookCopyRepository;
 import com.example.demo.repository.bookshop.SaleBookCopyRepository;
 import com.example.demo.repository.bookshop.SaleRepository;
 import java.time.LocalDate;
@@ -22,6 +25,7 @@ class SaleServiceTest {
 
   @Mock private SaleRepository saleRepository;
   @Mock private SaleBookCopyRepository saleBookCopyRepository;
+  @Mock private BookCopyRepository bookCopyRepository;
 
   @InjectMocks private SaleService saleService;
 
@@ -46,11 +50,16 @@ class SaleServiceTest {
   }
 
   @Test
-  void getAll_returnsAllSales() {
-    when(saleRepository.findAll()).thenReturn(List.of(new Sale()));
+  void save_createsSale() {
+    var bookCopyId = UUID.randomUUID();
+    var input =
+        new com.example.demo.dto.request.CreateSaleDTO(LocalDate.now(), List.of(bookCopyId));
+    when(bookCopyRepository.findById(bookCopyId)).thenReturn(Optional.of(new BookCopy()));
+    when(saleRepository.save(any(Sale.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    when(saleBookCopyRepository.saveAll(any())).thenReturn(List.of());
 
-    var result = saleService.getAll();
+    var result = saleService.save(input);
 
-    assertEquals(1, result.size());
+    assertNotNull(result);
   }
 }

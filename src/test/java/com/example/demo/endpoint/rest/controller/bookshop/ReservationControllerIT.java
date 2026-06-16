@@ -5,7 +5,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.example.demo.conf.FacadeIT;
 import com.example.demo.dto.request.*;
 import com.example.demo.dto.response.*;
+import com.example.demo.entity.enums.BookCopyType;
+import com.example.demo.entity.enums.BookStatus;
 import com.example.demo.entity.enums.ReservationStatus;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -21,7 +24,7 @@ class ReservationControllerIT extends FacadeIT {
 
   @Autowired private TestRestTemplate rest;
 
-  private UUID bookId;
+  private UUID bookCopyId;
 
   @BeforeEach
   void setUp() {
@@ -44,13 +47,27 @@ class ReservationControllerIT extends FacadeIT {
             LocalDate.of(2024, 1, 1),
             genre.getId(),
             List.of(author.getId()));
-    bookId = rest.postForEntity("/api/v1/books", bookInput, BookResponse.class).getBody().getId();
+    var bookId =
+        rest.postForEntity("/api/v1/books", bookInput, BookResponse.class).getBody().getId();
+    var copy =
+        rest.postForEntity(
+                "/api/v1/book-copies",
+                new CreateBookCopyDTO(
+                    bookId,
+                    BookCopyType.PAPERBACK,
+                    BigDecimal.valueOf(10),
+                    "Shelf",
+                    BookStatus.AVAILABLE),
+                BookCopyResponse.class)
+            .getBody();
+    bookCopyId = copy.getId();
   }
 
   @Test
   void createAndGetReservation() {
     var input =
-        new CreateReservationDTO(LocalDate.now(), List.of(new CreateArrivalBookDTO(bookId, 3)));
+        new CreateReservationDTO(
+            LocalDate.now(), List.of(new QuantifiedBookCopyDTO(bookCopyId, 3)));
 
     ResponseEntity<ReservationResponse> created =
         rest.postForEntity("/api/v1/reservations", input, ReservationResponse.class);
@@ -72,14 +89,15 @@ class ReservationControllerIT extends FacadeIT {
   @Test
   void updateReservationStatus() {
     var input =
-        new CreateReservationDTO(LocalDate.now(), List.of(new CreateArrivalBookDTO(bookId, 1)));
+        new CreateReservationDTO(
+            LocalDate.now(), List.of(new QuantifiedBookCopyDTO(bookCopyId, 1)));
     var created =
         rest.postForEntity("/api/v1/reservations", input, ReservationResponse.class).getBody();
 
     ResponseEntity<ReservationResponse> updated =
         rest.exchange(
             "/api/v1/reservations/" + created.getId() + "/status?status=CONFIRMED",
-            org.springframework.http.HttpMethod.PATCH,
+            HttpMethod.PATCH,
             null,
             ReservationResponse.class);
 
@@ -90,7 +108,8 @@ class ReservationControllerIT extends FacadeIT {
   @Test
   void deleteReservation() {
     var input =
-        new CreateReservationDTO(LocalDate.now(), List.of(new CreateArrivalBookDTO(bookId, 2)));
+        new CreateReservationDTO(
+            LocalDate.now(), List.of(new QuantifiedBookCopyDTO(bookCopyId, 2)));
     var created =
         rest.postForEntity("/api/v1/reservations", input, ReservationResponse.class).getBody();
 

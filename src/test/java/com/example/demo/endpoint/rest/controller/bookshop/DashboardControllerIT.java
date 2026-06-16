@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.example.demo.conf.FacadeIT;
 import com.example.demo.dto.request.*;
 import com.example.demo.dto.response.*;
+import com.example.demo.entity.enums.BookCopyType;
 import com.example.demo.entity.enums.BookStatus;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -49,7 +50,12 @@ class DashboardControllerIT extends FacadeIT {
 
     rest.postForEntity(
         "/api/v1/book-copies",
-        new CreateBookCopyDTO(book.getId(), BigDecimal.valueOf(30), "D1", BookStatus.AVAILABLE),
+        new CreateBookCopyDTO(
+            book.getId(),
+            BookCopyType.PAPERBACK,
+            BigDecimal.valueOf(30),
+            "D1",
+            BookStatus.AVAILABLE),
         BookCopyResponse.class);
   }
 

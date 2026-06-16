@@ -28,6 +28,7 @@ public class Sale {
   @Column(nullable = false)
   private LocalDate saleDate;
 
-  @OneToMany(mappedBy = "sale")
+  @OneToMany(mappedBy = "sale", fetch = FetchType.LAZY)
+  @Builder.Default
   private List<SaleBookCopy> books = new ArrayList<>();
 }

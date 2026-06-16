@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.example.demo.conf.FacadeIT;
 import com.example.demo.dto.request.*;
 import com.example.demo.dto.response.*;
+import com.example.demo.entity.enums.BookCopyType;
 import com.example.demo.entity.enums.BookStatus;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -53,7 +54,8 @@ class BookCopyControllerIT extends FacadeIT {
   void listBookCopies_filtersByBookId() {
     rest.postForEntity(
         "/api/v1/book-copies",
-        new CreateBookCopyDTO(bookId, BigDecimal.valueOf(10), "A1", BookStatus.AVAILABLE),
+        new CreateBookCopyDTO(
+            bookId, BookCopyType.PAPERBACK, BigDecimal.valueOf(10), "A1", BookStatus.AVAILABLE),
         BookCopyResponse.class);
 
     ResponseEntity<List<BookCopyResponse>> byBook =
@@ -79,11 +81,13 @@ class BookCopyControllerIT extends FacadeIT {
   void listBookCopies_filtersByStatus() {
     rest.postForEntity(
         "/api/v1/book-copies",
-        new CreateBookCopyDTO(bookId, BigDecimal.valueOf(15), "B1", BookStatus.AVAILABLE),
+        new CreateBookCopyDTO(
+            bookId, BookCopyType.PAPERBACK, BigDecimal.valueOf(15), "B1", BookStatus.AVAILABLE),
         BookCopyResponse.class);
     rest.postForEntity(
         "/api/v1/book-copies",
-        new CreateBookCopyDTO(bookId, BigDecimal.valueOf(20), "B2", BookStatus.SOLD),
+        new CreateBookCopyDTO(
+            bookId, BookCopyType.HARDBACK, BigDecimal.valueOf(20), "B2", BookStatus.SOLD),
         BookCopyResponse.class);
 
     ResponseEntity<List<BookCopyResponse>> byStatus =
@@ -100,7 +104,8 @@ class BookCopyControllerIT extends FacadeIT {
   void listBookCopies_filtersByBookIdAndStatus() {
     rest.postForEntity(
         "/api/v1/book-copies",
-        new CreateBookCopyDTO(bookId, BigDecimal.valueOf(25), "C1", BookStatus.AVAILABLE),
+        new CreateBookCopyDTO(
+            bookId, BookCopyType.PAPERBACK, BigDecimal.valueOf(25), "C1", BookStatus.AVAILABLE),
         BookCopyResponse.class);
 
     ResponseEntity<List<BookCopyResponse>> byBoth =

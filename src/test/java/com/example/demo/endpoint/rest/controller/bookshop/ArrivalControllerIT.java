@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.example.demo.conf.FacadeIT;
 import com.example.demo.dto.request.*;
 import com.example.demo.dto.response.*;
+import com.example.demo.entity.enums.BookCopyType;
+import com.example.demo.entity.enums.BookStatus;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -19,7 +22,7 @@ class ArrivalControllerIT extends FacadeIT {
 
   @Autowired private TestRestTemplate rest;
 
-  private UUID bookId;
+  private UUID bookCopyId;
 
   @BeforeEach
   void setUp() {
@@ -42,13 +45,26 @@ class ArrivalControllerIT extends FacadeIT {
             LocalDate.of(2024, 1, 1),
             genre.getId(),
             List.of(author.getId()));
-    bookId = rest.postForEntity("/api/v1/books", bookInput, BookResponse.class).getBody().getId();
+    var bookId =
+        rest.postForEntity("/api/v1/books", bookInput, BookResponse.class).getBody().getId();
+    var copy =
+        rest.postForEntity(
+                "/api/v1/book-copies",
+                new CreateBookCopyDTO(
+                    bookId,
+                    BookCopyType.PAPERBACK,
+                    BigDecimal.valueOf(10),
+                    "Shelf",
+                    BookStatus.AVAILABLE),
+                BookCopyResponse.class)
+            .getBody();
+    bookCopyId = copy.getId();
   }
 
   @Test
   void createAndGetArrival() {
     var input =
-        new CreateArrivalDTO(LocalDate.now(), List.of(new CreateArrivalBookDTO(bookId, 10)));
+        new CreateArrivalDTO(LocalDate.now(), List.of(new QuantifiedBookCopyDTO(bookCopyId, 10)));
 
     ResponseEntity<ArrivalResponse> created =
         rest.postForEntity("/api/v1/arrivals", input, ArrivalResponse.class);
@@ -69,7 +85,8 @@ class ArrivalControllerIT extends FacadeIT {
 
   @Test
   void deleteArrival() {
-    var input = new CreateArrivalDTO(LocalDate.now(), List.of(new CreateArrivalBookDTO(bookId, 5)));
+    var input =
+        new CreateArrivalDTO(LocalDate.now(), List.of(new QuantifiedBookCopyDTO(bookCopyId, 5)));
     var created = rest.postForEntity("/api/v1/arrivals", input, ArrivalResponse.class).getBody();
 
     rest.delete("/api/v1/arrivals/" + created.getId());

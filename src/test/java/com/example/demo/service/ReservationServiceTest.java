@@ -4,13 +4,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import com.example.demo.dto.request.CreateArrivalBookDTO;
 import com.example.demo.dto.request.CreateReservationDTO;
+import com.example.demo.dto.request.QuantifiedBookCopyDTO;
 import com.example.demo.entity.Book;
+import com.example.demo.entity.BookCopy;
 import com.example.demo.entity.Reservation;
 import com.example.demo.entity.ReservationBook;
 import com.example.demo.entity.enums.ReservationStatus;
-import com.example.demo.repository.bookshop.BookRepository;
+import com.example.demo.repository.bookshop.BookCopyRepository;
 import com.example.demo.repository.bookshop.ReservationBookRepository;
 import com.example.demo.repository.bookshop.ReservationRepository;
 import java.time.LocalDate;
@@ -29,7 +30,7 @@ class ReservationServiceTest {
 
   @Mock private ReservationRepository reservationRepository;
   @Mock private ReservationBookRepository reservationBookRepository;
-  @Mock private BookRepository bookRepository;
+  @Mock private BookCopyRepository bookCopyRepository;
 
   @InjectMocks private ReservationService reservationService;
 
@@ -60,12 +61,14 @@ class ReservationServiceTest {
 
   @Test
   void create_savesReservationWithBooks() {
-    var bookId = UUID.randomUUID();
-    var book = Book.builder().id(bookId).title("Test Book").build();
+    var bookCopyId = UUID.randomUUID();
+    var book = Book.builder().id(UUID.randomUUID()).title("Test Book").build();
+    var bookCopy = BookCopy.builder().id(bookCopyId).book(book).build();
     var input =
-        new CreateReservationDTO(LocalDate.now(), List.of(new CreateArrivalBookDTO(bookId, 2)));
+        new CreateReservationDTO(
+            LocalDate.now(), List.of(new QuantifiedBookCopyDTO(bookCopyId, 2)));
 
-    when(bookRepository.findById(bookId)).thenReturn(Optional.of(book));
+    when(bookCopyRepository.findById(bookCopyId)).thenReturn(Optional.of(bookCopy));
     when(reservationRepository.save(any(Reservation.class)))
         .thenAnswer(
             invocation -> {

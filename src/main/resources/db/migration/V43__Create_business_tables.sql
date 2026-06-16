@@ -28,11 +28,27 @@ create table if not exists book_author
     primary key (book_id, author_id)
 );
 
+DO $$ BEGIN
+    CREATE TYPE book_status AS ENUM ('AVAILABLE', 'SOLD_OUT', 'SOLD');
+EXCEPTION WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE book_copy_type AS ENUM ('PAPERBACK', 'HARDBACK', 'POCKET');
+EXCEPTION WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE reservation_status AS ENUM ('PENDING', 'CONFIRMED', 'CANCELLED');
+EXCEPTION WHEN duplicate_object THEN null;
+END $$;
+
 create table if not exists book_copy
 (
     id       uuid            default gen_random_uuid() primary key,
-    book_id  uuid            not null references book (id),
-    status   varchar(50)     not null,
+    book_id  uuid            not null references book (id) on delete cascade,
+    status   book_status     not null,
+    type     book_copy_type  not null,
     price    decimal(10, 2) not null,
     location varchar(255)
 );
@@ -45,25 +61,24 @@ create table if not exists sale
 
 create table if not exists sale_book_copy
 (
-    sale_id      uuid            not null references sale (id),
-    book_copy_id uuid            not null references book_copy (id),
-    price        decimal(10, 2) not null,
+    sale_id      uuid not null references sale (id) on delete cascade,
+    book_copy_id uuid not null references book_copy (id) on delete cascade,
     primary key (sale_id, book_copy_id)
 );
 
 create table if not exists reservation
 (
-    id                uuid        default gen_random_uuid() primary key,
-    reservation_date  timestamp   not null,
-    status            varchar(50) not null default 'PENDING'
+    id                uuid                default gen_random_uuid() primary key,
+    reservation_date  timestamp           not null,
+    status            reservation_status  not null default 'PENDING'
 );
 
 create table if not exists reservation_book
 (
-    reservation_id uuid    not null references reservation (id),
-    book_id        uuid    not null references book (id),
+    reservation_id uuid    not null references reservation (id) on delete cascade,
+    book_copy_id   uuid    not null references book_copy (id) on delete cascade,
     quantity       integer not null,
-    primary key (reservation_id, book_id)
+    primary key (reservation_id, book_copy_id)
 );
 
 create table if not exists arrival
@@ -74,8 +89,8 @@ create table if not exists arrival
 
 create table if not exists arrival_book
 (
-    arrival_id uuid    not null references arrival (id),
-    book_id    uuid    not null references book (id),
-    quantity   integer not null,
-    primary key (arrival_id, book_id)
+    arrival_id   uuid    not null references arrival (id) on delete cascade,
+    book_copy_id uuid    not null references book_copy (id) on delete cascade,
+    quantity     integer not null,
+    primary key (arrival_id, book_copy_id)
 );

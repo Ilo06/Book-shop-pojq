@@ -35,27 +35,23 @@ class BookServiceTest {
   void findAll_withGenreFilter_callsFindByFilters() {
     var genre = Genre.builder().id(UUID.randomUUID()).name("Fiction").build();
     var book = Book.builder().id(UUID.randomUUID()).title("Test").genre(genre).build();
-    when(bookRepository.findByFilters(
-            any(), any(), any(), anyBoolean(), anyBoolean(), anyBoolean()))
-        .thenReturn(List.of(book));
+    when(bookRepository.findByFilters(any(), any(), any())).thenReturn(List.of(book));
 
     var result = bookService.findAll(genre.getId(), null, null);
 
     assertEquals(1, result.size());
     assertEquals("Test", result.get(0).getTitle());
-    verify(bookRepository).findByFilters(genre.getId(), null, null, true, false, false);
+    verify(bookRepository).findByFilters(genre.getId(), null, null);
   }
 
   @Test
   void findAll_withSearch_callsFindByFilters() {
-    when(bookRepository.findByFilters(
-            any(), any(), any(), anyBoolean(), anyBoolean(), anyBoolean()))
-        .thenReturn(List.of());
+    when(bookRepository.findByFilters(any(), any(), any())).thenReturn(List.of());
 
     var result = bookService.findAll(null, null, "harry");
 
     assertEquals(0, result.size());
-    verify(bookRepository).findByFilters(null, null, "%harry%", false, false, true);
+    verify(bookRepository).findByFilters(null, null, "harry");
   }
 
   @Test

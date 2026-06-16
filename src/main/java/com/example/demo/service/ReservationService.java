@@ -3,13 +3,13 @@ package com.example.demo.service;
 import com.example.demo.dto.request.CreateReservationDTO;
 import com.example.demo.dto.response.ReservationBookResponse;
 import com.example.demo.dto.response.ReservationResponse;
-import com.example.demo.entity.Book;
+import com.example.demo.entity.BookCopy;
 import com.example.demo.entity.Reservation;
 import com.example.demo.entity.ReservationBook;
 import com.example.demo.entity.enums.ReservationStatus;
 import com.example.demo.entity.keys.ReservationBookId;
 import com.example.demo.exception.ResourceNotFoundException;
-import com.example.demo.repository.bookshop.BookRepository;
+import com.example.demo.repository.bookshop.BookCopyRepository;
 import com.example.demo.repository.bookshop.ReservationBookRepository;
 import com.example.demo.repository.bookshop.ReservationRepository;
 import java.time.LocalDateTime;
@@ -28,7 +28,7 @@ public class ReservationService {
 
   private final ReservationRepository reservationRepository;
   private final ReservationBookRepository reservationBookRepository;
-  private final BookRepository bookRepository;
+  private final BookCopyRepository bookCopyRepository;
 
   public Page<ReservationResponse> findAll(Pageable pageable) {
     return reservationRepository.findAll(pageable).map(this::toResponse);
@@ -51,15 +51,16 @@ public class ReservationService {
     List<ReservationBook> books = new ArrayList<>();
     if (input.getBooks() != null) {
       for (var bookInput : input.getBooks()) {
-        Book book =
-            bookRepository
-                .findById(bookInput.getBookId())
+        BookCopy bookCopy =
+            bookCopyRepository
+                .findById(bookInput.getBookCopyId())
                 .orElseThrow(
                     () ->
                         new ResourceNotFoundException(
-                            "Book not found with id: " + bookInput.getBookId()));
-        ReservationBookId id = new ReservationBookId(reservation.getId(), book.getId());
-        ReservationBook rb = new ReservationBook(id, reservation, book, bookInput.getQuantity());
+                            "Book copy not found with id: " + bookInput.getBookCopyId()));
+        ReservationBookId id = new ReservationBookId(reservation.getId(), bookCopy.getId());
+        ReservationBook rb =
+            new ReservationBook(id, reservation, bookCopy, bookInput.getQuantity());
         books.add(reservationBookRepository.save(rb));
       }
     }
@@ -101,8 +102,8 @@ public class ReservationService {
                 .map(
                     rb ->
                         ReservationBookResponse.builder()
-                            .bookId(rb.getBook().getId())
-                            .bookTitle(rb.getBook().getTitle())
+                            .bookId(rb.getBook().getBook().getId())
+                            .bookTitle(rb.getBook().getBook().getTitle())
                             .quantity(rb.getQuantity())
                             .build())
                 .toList())

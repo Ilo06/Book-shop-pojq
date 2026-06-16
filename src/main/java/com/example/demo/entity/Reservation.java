@@ -10,6 +10,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "reservation")
@@ -29,7 +31,8 @@ public class Reservation {
   private LocalDateTime reservationDate;
 
   @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
+  @Column(nullable = false, columnDefinition = "reservation_status")
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   private ReservationStatus status; // PENDING, CONFIRMED, CANCELLED
 
   @OneToMany(mappedBy = "reservation")

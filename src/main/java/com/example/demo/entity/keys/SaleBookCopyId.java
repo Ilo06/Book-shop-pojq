@@ -4,13 +4,13 @@ import jakarta.persistence.Embeddable;
 import java.io.Serializable;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Embeddable
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
 public class SaleBookCopyId implements Serializable {
   private UUID saleId;
   private UUID bookCopyId;
