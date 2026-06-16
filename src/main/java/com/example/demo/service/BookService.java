@@ -45,7 +45,8 @@ public class BookService {
     }
     if (search != null && !search.isBlank()) {
       parts.add(
-          "AND (LOWER(b.title) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(b.isbn) LIKE LOWER(CONCAT('%', :search, '%')))");
+          "AND (LOWER(b.title) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(b.isbn) LIKE"
+              + " LOWER(CONCAT('%', :search, '%')))");
     }
     TypedQuery<Book> query = em.createQuery(String.join(" ", parts), Book.class);
     if (genreId != null) {
