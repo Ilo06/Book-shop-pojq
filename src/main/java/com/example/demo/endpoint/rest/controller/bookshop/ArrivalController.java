@@ -32,10 +32,8 @@ public class ArrivalController {
   }
 
   @PostMapping
-  public ResponseEntity<ArrivalResponse> createArrival(
-      @Valid @RequestBody CreateArrivalDTO input) {
-    return ResponseEntity.status(HttpStatus.CREATED)
-        .body(arrivalService.create(input));
+  public ResponseEntity<ArrivalResponse> createArrival(@Valid @RequestBody CreateArrivalDTO input) {
+    return ResponseEntity.status(HttpStatus.CREATED).body(arrivalService.create(input));
   }
 
   @DeleteMapping("/{arrivalId}")

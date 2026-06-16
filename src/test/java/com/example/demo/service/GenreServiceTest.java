@@ -7,7 +7,6 @@ import static org.mockito.Mockito.*;
 import com.example.demo.dto.request.CreateGenreDTO;
 import com.example.demo.entity.Genre;
 import com.example.demo.exception.ResourceConflictException;
-import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.bookshop.GenreRepository;
 import java.util.Optional;
 import java.util.UUID;

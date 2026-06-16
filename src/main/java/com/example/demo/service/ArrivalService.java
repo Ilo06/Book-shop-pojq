@@ -39,10 +39,7 @@ public class ArrivalService {
 
   @Transactional
   public ArrivalResponse create(CreateArrivalDTO input) {
-    Arrival arrival =
-        Arrival.builder()
-            .arrivalDate(input.getArrivalDate())
-            .build();
+    Arrival arrival = Arrival.builder().arrivalDate(input.getArrivalDate()).build();
     arrival = arrivalRepository.save(arrival);
 
     List<ArrivalBook> books = new ArrayList<>();
@@ -67,9 +64,7 @@ public class ArrivalService {
   @Transactional
   public void delete(UUID id) {
     Arrival arrival = getOrThrow(id);
-    arrivalBookRepository
-        .findByArrivalId(id)
-        .forEach(arrivalBookRepository::delete);
+    arrivalBookRepository.findByArrivalId(id).forEach(arrivalBookRepository::delete);
     arrivalRepository.delete(arrival);
   }
 

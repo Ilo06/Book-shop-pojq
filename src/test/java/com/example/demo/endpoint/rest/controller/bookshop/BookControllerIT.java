@@ -32,18 +32,30 @@ class BookControllerIT extends FacadeIT {
   @BeforeEach
   void setUp() {
     var suffix = UUID.randomUUID().toString().substring(0, 8);
-    var genre = rest.postForEntity("/api/v1/genres", new CreateGenreDTO("TestGenre" + suffix),
-        GenreResponse.class).getBody();
+    var genre =
+        rest.postForEntity(
+                "/api/v1/genres", new CreateGenreDTO("TestGenre" + suffix), GenreResponse.class)
+            .getBody();
     genreId = genre.getId();
-    var author = rest.postForEntity("/api/v1/authors", new CreateAuthorDTO("Test" + suffix, "Author"),
-        AuthorResponse.class).getBody();
+    var author =
+        rest.postForEntity(
+                "/api/v1/authors",
+                new CreateAuthorDTO("Test" + suffix, "Author"),
+                AuthorResponse.class)
+            .getBody();
     authorId = author.getId();
   }
 
   @Test
   void createAndGetBook() {
-    var input = new CreateBookDTO("Integration Book", "9990000000001", "Desc",
-        LocalDate.of(2024, 1, 1), genreId, List.of(authorId));
+    var input =
+        new CreateBookDTO(
+            "Integration Book",
+            "9990000000001",
+            "Desc",
+            LocalDate.of(2024, 1, 1),
+            genreId,
+            List.of(authorId));
 
     ResponseEntity<BookResponse> created =
         rest.postForEntity("/api/v1/books", input, BookResponse.class);
@@ -64,27 +76,45 @@ class BookControllerIT extends FacadeIT {
 
   @Test
   void listBooks_withFilters() {
-    var input = new CreateBookDTO("Filterable Book", "9990000000002", "Desc",
-        LocalDate.of(2024, 1, 1), genreId, List.of(authorId));
+    var input =
+        new CreateBookDTO(
+            "Filterable Book",
+            "9990000000002",
+            "Desc",
+            LocalDate.of(2024, 1, 1),
+            genreId,
+            List.of(authorId));
     rest.postForEntity("/api/v1/books", input, BookResponse.class);
 
-    ResponseEntity<List<BookSummaryResponse>> byGenre = rest.exchange(
-        "/api/v1/books?genreId=" + genreId, HttpMethod.GET, null,
-        new ParameterizedTypeReference<List<BookSummaryResponse>>() {});
+    ResponseEntity<List<BookSummaryResponse>> byGenre =
+        rest.exchange(
+            "/api/v1/books?genreId=" + genreId,
+            HttpMethod.GET,
+            null,
+            new ParameterizedTypeReference<List<BookSummaryResponse>>() {});
     assertEquals(HttpStatus.OK, byGenre.getStatusCode());
     assertTrue(byGenre.getBody().stream().anyMatch(b -> b.getTitle().equals("Filterable Book")));
 
-    ResponseEntity<List<BookSummaryResponse>> bySearch = rest.exchange(
-        "/api/v1/books?search=Filterable", HttpMethod.GET, null,
-        new ParameterizedTypeReference<List<BookSummaryResponse>>() {});
+    ResponseEntity<List<BookSummaryResponse>> bySearch =
+        rest.exchange(
+            "/api/v1/books?search=Filterable",
+            HttpMethod.GET,
+            null,
+            new ParameterizedTypeReference<List<BookSummaryResponse>>() {});
     assertEquals(HttpStatus.OK, bySearch.getStatusCode());
     assertTrue(bySearch.getBody().stream().anyMatch(b -> b.getTitle().equals("Filterable Book")));
   }
 
   @Test
   void deleteBook() {
-    var input = new CreateBookDTO("Delete Book", "9990000000003", "Desc",
-        LocalDate.of(2024, 1, 1), genreId, List.of(authorId));
+    var input =
+        new CreateBookDTO(
+            "Delete Book",
+            "9990000000003",
+            "Desc",
+            LocalDate.of(2024, 1, 1),
+            genreId,
+            List.of(authorId));
     var created = rest.postForEntity("/api/v1/books", input, BookResponse.class).getBody();
 
     rest.delete("/api/v1/books/" + created.getId());

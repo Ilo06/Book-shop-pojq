@@ -31,9 +31,10 @@ public class BookService {
   @Transactional(readOnly = true)
   public List<BookSummaryResponse> findAll(UUID genreId, UUID authorId, String search) {
     var pattern = search != null ? "%" + search.toLowerCase() + "%" : null;
-    return bookRepository.findByFilters(
-        genreId, authorId, pattern,
-        genreId != null, authorId != null, search != null).stream()
+    return bookRepository
+        .findByFilters(
+            genreId, authorId, pattern, genreId != null, authorId != null, search != null)
+        .stream()
         .map(this::toSummaryResponse)
         .toList();
   }

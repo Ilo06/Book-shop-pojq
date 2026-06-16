@@ -33,8 +33,13 @@ class BookCopyServiceTest {
   void findAll_withBookId_filtersByBook() {
     var bookId = UUID.randomUUID();
     var book = Book.builder().id(bookId).title("Test").build();
-    var copy = BookCopy.builder().id(UUID.randomUUID()).book(book).status(BookStatus.AVAILABLE)
-        .price(BigDecimal.TEN).build();
+    var copy =
+        BookCopy.builder()
+            .id(UUID.randomUUID())
+            .book(book)
+            .status(BookStatus.AVAILABLE)
+            .price(BigDecimal.TEN)
+            .build();
     when(bookService.getOrThrow(bookId)).thenReturn(book);
     when(bookCopyRepository.findByBookId(bookId)).thenReturn(List.of(copy));
 
@@ -46,8 +51,12 @@ class BookCopyServiceTest {
 
   @Test
   void findAll_withStatus_filtersByStatus() {
-    var copy = BookCopy.builder().id(UUID.randomUUID()).status(BookStatus.AVAILABLE)
-        .price(BigDecimal.TEN).build();
+    var copy =
+        BookCopy.builder()
+            .id(UUID.randomUUID())
+            .status(BookStatus.AVAILABLE)
+            .price(BigDecimal.TEN)
+            .build();
     when(bookCopyRepository.findByStatus(BookStatus.AVAILABLE)).thenReturn(List.of(copy));
 
     var result = bookCopyService.findAll(null, BookStatus.AVAILABLE);
@@ -60,8 +69,13 @@ class BookCopyServiceTest {
   void findAll_withBookIdAndStatus_filtersByBoth() {
     var bookId = UUID.randomUUID();
     var book = Book.builder().id(bookId).title("Test").build();
-    var copy = BookCopy.builder().id(UUID.randomUUID()).book(book).status(BookStatus.AVAILABLE)
-        .price(BigDecimal.TEN).build();
+    var copy =
+        BookCopy.builder()
+            .id(UUID.randomUUID())
+            .book(book)
+            .status(BookStatus.AVAILABLE)
+            .price(BigDecimal.TEN)
+            .build();
     when(bookService.getOrThrow(bookId)).thenReturn(book);
     when(bookCopyRepository.findByBookIdAndStatus(bookId, BookStatus.AVAILABLE))
         .thenReturn(List.of(copy));
@@ -74,8 +88,12 @@ class BookCopyServiceTest {
 
   @Test
   void findAll_withNoFilters_returnsAll() {
-    var copy = BookCopy.builder().id(UUID.randomUUID()).status(BookStatus.AVAILABLE)
-        .price(BigDecimal.TEN).build();
+    var copy =
+        BookCopy.builder()
+            .id(UUID.randomUUID())
+            .status(BookStatus.AVAILABLE)
+            .price(BigDecimal.TEN)
+            .build();
     when(bookCopyRepository.findAll()).thenReturn(List.of(copy));
 
     var result = bookCopyService.findAll(null, null);

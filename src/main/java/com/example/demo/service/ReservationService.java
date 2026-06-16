@@ -43,9 +43,7 @@ public class ReservationService {
     Reservation reservation =
         Reservation.builder()
             .reservationDate(
-                input.getDate() != null
-                    ? input.getDate().atStartOfDay()
-                    : LocalDateTime.now())
+                input.getDate() != null ? input.getDate().atStartOfDay() : LocalDateTime.now())
             .status(ReservationStatus.PENDING)
             .build();
     reservation = reservationRepository.save(reservation);
@@ -79,9 +77,7 @@ public class ReservationService {
   @Transactional
   public void delete(UUID id) {
     Reservation reservation = getOrThrow(id);
-    reservationBookRepository
-        .findByReservationId(id)
-        .forEach(reservationBookRepository::delete);
+    reservationBookRepository.findByReservationId(id).forEach(reservationBookRepository::delete);
     reservationRepository.delete(reservation);
   }
 

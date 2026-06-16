@@ -24,16 +24,31 @@ class DashboardControllerIT extends FacadeIT {
   @BeforeEach
   void setUp() {
     var suffix = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 8);
-    var genre = rest.postForEntity("/api/v1/genres", new CreateGenreDTO("DashGenre" + suffix),
-        GenreResponse.class).getBody();
-    var author = rest.postForEntity("/api/v1/authors", new CreateAuthorDTO("Dash" + suffix, "Author"),
-        AuthorResponse.class).getBody();
-    var book = rest.postForEntity("/api/v1/books",
-        new CreateBookDTO("Dash Book " + suffix, String.format("555%010d", System.nanoTime() % 10000000000L), "Desc", LocalDate.of(2024, 1, 1),
-            genre.getId(), List.of(author.getId())),
-        BookResponse.class).getBody();
+    var genre =
+        rest.postForEntity(
+                "/api/v1/genres", new CreateGenreDTO("DashGenre" + suffix), GenreResponse.class)
+            .getBody();
+    var author =
+        rest.postForEntity(
+                "/api/v1/authors",
+                new CreateAuthorDTO("Dash" + suffix, "Author"),
+                AuthorResponse.class)
+            .getBody();
+    var book =
+        rest.postForEntity(
+                "/api/v1/books",
+                new CreateBookDTO(
+                    "Dash Book " + suffix,
+                    String.format("555%010d", System.nanoTime() % 10000000000L),
+                    "Desc",
+                    LocalDate.of(2024, 1, 1),
+                    genre.getId(),
+                    List.of(author.getId())),
+                BookResponse.class)
+            .getBody();
 
-    rest.postForEntity("/api/v1/book-copies",
+    rest.postForEntity(
+        "/api/v1/book-copies",
         new CreateBookCopyDTO(book.getId(), BigDecimal.valueOf(30), "D1", BookStatus.AVAILABLE),
         BookCopyResponse.class);
   }
@@ -81,8 +96,7 @@ class DashboardControllerIT extends FacadeIT {
 
   @Test
   void getLowStockBooks() {
-    ResponseEntity<List> low =
-        rest.getForEntity("/api/v1/dashboard/stock/low", List.class);
+    ResponseEntity<List> low = rest.getForEntity("/api/v1/dashboard/stock/low", List.class);
 
     assertEquals(HttpStatus.OK, low.getStatusCode());
   }

@@ -24,19 +24,31 @@ class ArrivalControllerIT extends FacadeIT {
   @BeforeEach
   void setUp() {
     var suffix = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 8);
-    var genre = rest.postForEntity("/api/v1/genres", new CreateGenreDTO("ArrGenre" + suffix),
-        GenreResponse.class).getBody();
-    var author = rest.postForEntity("/api/v1/authors", new CreateAuthorDTO("Arr" + suffix, "Author"),
-        AuthorResponse.class).getBody();
-    var bookInput = new CreateBookDTO("Arrival Book " + suffix, String.format("666%010d", System.nanoTime() % 10000000000L), "Desc",
-        LocalDate.of(2024, 1, 1), genre.getId(), List.of(author.getId()));
+    var genre =
+        rest.postForEntity(
+                "/api/v1/genres", new CreateGenreDTO("ArrGenre" + suffix), GenreResponse.class)
+            .getBody();
+    var author =
+        rest.postForEntity(
+                "/api/v1/authors",
+                new CreateAuthorDTO("Arr" + suffix, "Author"),
+                AuthorResponse.class)
+            .getBody();
+    var bookInput =
+        new CreateBookDTO(
+            "Arrival Book " + suffix,
+            String.format("666%010d", System.nanoTime() % 10000000000L),
+            "Desc",
+            LocalDate.of(2024, 1, 1),
+            genre.getId(),
+            List.of(author.getId()));
     bookId = rest.postForEntity("/api/v1/books", bookInput, BookResponse.class).getBody().getId();
   }
 
   @Test
   void createAndGetArrival() {
-    var input = new CreateArrivalDTO(LocalDate.now(),
-        List.of(new CreateArrivalBookDTO(bookId, 10)));
+    var input =
+        new CreateArrivalDTO(LocalDate.now(), List.of(new CreateArrivalBookDTO(bookId, 10)));
 
     ResponseEntity<ArrivalResponse> created =
         rest.postForEntity("/api/v1/arrivals", input, ArrivalResponse.class);
@@ -57,8 +69,7 @@ class ArrivalControllerIT extends FacadeIT {
 
   @Test
   void deleteArrival() {
-    var input = new CreateArrivalDTO(LocalDate.now(),
-        List.of(new CreateArrivalBookDTO(bookId, 5)));
+    var input = new CreateArrivalDTO(LocalDate.now(), List.of(new CreateArrivalBookDTO(bookId, 5)));
     var created = rest.postForEntity("/api/v1/arrivals", input, ArrivalResponse.class).getBody();
 
     rest.delete("/api/v1/arrivals/" + created.getId());

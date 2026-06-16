@@ -35,8 +35,7 @@ public class ReservationController {
   @PostMapping
   public ResponseEntity<ReservationResponse> createReservation(
       @Valid @RequestBody CreateReservationDTO input) {
-    return ResponseEntity.status(HttpStatus.CREATED)
-        .body(reservationService.create(input));
+    return ResponseEntity.status(HttpStatus.CREATED).body(reservationService.create(input));
   }
 
   @PatchMapping("/{reservationId}/status")

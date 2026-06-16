@@ -34,8 +34,7 @@ class ArrivalServiceTest {
 
   @Test
   void findAll_returnsPagedArrivals() {
-    var arrival = Arrival.builder().id(UUID.randomUUID())
-        .arrivalDate(LocalDate.now()).build();
+    var arrival = Arrival.builder().id(UUID.randomUUID()).arrivalDate(LocalDate.now()).build();
     var page = new PageImpl<>(List.of(arrival));
     when(arrivalRepository.findAll(any(Pageable.class))).thenReturn(page);
     when(arrivalBookRepository.findByArrivalId(arrival.getId())).thenReturn(List.of());
@@ -61,15 +60,18 @@ class ArrivalServiceTest {
   void create_savesArrivalWithBooks() {
     var bookId = UUID.randomUUID();
     var book = Book.builder().id(bookId).title("Test Book").build();
-    var input = new CreateArrivalDTO(LocalDate.now(),
-        List.of(new CreateArrivalBookDTO(bookId, 5)));
+    var input = new CreateArrivalDTO(LocalDate.now(), List.of(new CreateArrivalBookDTO(bookId, 5)));
 
     when(bookRepository.findById(bookId)).thenReturn(Optional.of(book));
     when(arrivalRepository.save(any(Arrival.class)))
-        .thenAnswer(invocation -> {
-          var a = invocation.getArgument(0, Arrival.class);
-          return Arrival.builder().id(UUID.randomUUID()).arrivalDate(a.getArrivalDate()).build();
-        });
+        .thenAnswer(
+            invocation -> {
+              var a = invocation.getArgument(0, Arrival.class);
+              return Arrival.builder()
+                  .id(UUID.randomUUID())
+                  .arrivalDate(a.getArrivalDate())
+                  .build();
+            });
     when(arrivalBookRepository.save(any(ArrivalBook.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
 

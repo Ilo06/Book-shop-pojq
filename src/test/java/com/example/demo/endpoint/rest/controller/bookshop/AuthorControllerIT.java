@@ -50,8 +50,9 @@ class AuthorControllerIT extends FacadeIT {
 
   @Test
   void deleteAuthor() {
-    var created = rest.postForEntity("/api/v1/authors",
-        new CreateAuthorDTO("Delete", "Me"), AuthorResponse.class);
+    var created =
+        rest.postForEntity(
+            "/api/v1/authors", new CreateAuthorDTO("Delete", "Me"), AuthorResponse.class);
     var id = created.getBody().getId();
 
     ResponseEntity<Void> deleted =

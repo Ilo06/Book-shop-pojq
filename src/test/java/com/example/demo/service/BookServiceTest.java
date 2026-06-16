@@ -35,7 +35,9 @@ class BookServiceTest {
   void findAll_withGenreFilter_callsFindByFilters() {
     var genre = Genre.builder().id(UUID.randomUUID()).name("Fiction").build();
     var book = Book.builder().id(UUID.randomUUID()).title("Test").genre(genre).build();
-    when(bookRepository.findByFilters(any(), any(), any(), anyBoolean(), anyBoolean(), anyBoolean())).thenReturn(List.of(book));
+    when(bookRepository.findByFilters(
+            any(), any(), any(), anyBoolean(), anyBoolean(), anyBoolean()))
+        .thenReturn(List.of(book));
 
     var result = bookService.findAll(genre.getId(), null, null);
 
@@ -46,7 +48,9 @@ class BookServiceTest {
 
   @Test
   void findAll_withSearch_callsFindByFilters() {
-    when(bookRepository.findByFilters(any(), any(), any(), anyBoolean(), anyBoolean(), anyBoolean())).thenReturn(List.of());
+    when(bookRepository.findByFilters(
+            any(), any(), any(), anyBoolean(), anyBoolean(), anyBoolean()))
+        .thenReturn(List.of());
 
     var result = bookService.findAll(null, null, "harry");
 
@@ -72,14 +76,14 @@ class BookServiceTest {
     var authorId = UUID.randomUUID();
     var genre = Genre.builder().id(genreId).name("Fiction").build();
     var author = Author.builder().id(authorId).firstName("John").lastName("Doe").build();
-    var input = new CreateBookDTO("Title", "1234567890123", "Desc", LocalDate.now(), genreId,
-        List.of(authorId));
+    var input =
+        new CreateBookDTO(
+            "Title", "1234567890123", "Desc", LocalDate.now(), genreId, List.of(authorId));
 
     when(bookRepository.existsByIsbn("1234567890123")).thenReturn(false);
     when(genreRepository.findById(genreId)).thenReturn(Optional.of(genre));
     when(authorRepository.findById(authorId)).thenReturn(Optional.of(author));
-    when(bookRepository.save(any(Book.class)))
-        .thenAnswer(invocation -> invocation.getArgument(0));
+    when(bookRepository.save(any(Book.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
     var result = bookService.create(input);
 
@@ -89,8 +93,9 @@ class BookServiceTest {
 
   @Test
   void create_throwsWhenIsbnDuplicate() {
-    var input = new CreateBookDTO("Title", "dup-isbn", "Desc", LocalDate.now(), UUID.randomUUID(),
-        List.of());
+    var input =
+        new CreateBookDTO(
+            "Title", "dup-isbn", "Desc", LocalDate.now(), UUID.randomUUID(), List.of());
     when(bookRepository.existsByIsbn("dup-isbn")).thenReturn(true);
 
     assertThrows(ResourceConflictException.class, () -> bookService.create(input));

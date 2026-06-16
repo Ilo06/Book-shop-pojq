@@ -35,8 +35,8 @@ class ReservationServiceTest {
 
   @Test
   void findAll_returnsPagedReservations() {
-    var reservation = Reservation.builder().id(UUID.randomUUID())
-        .status(ReservationStatus.PENDING).build();
+    var reservation =
+        Reservation.builder().id(UUID.randomUUID()).status(ReservationStatus.PENDING).build();
     var page = new PageImpl<>(List.of(reservation));
     when(reservationRepository.findAll(any(Pageable.class))).thenReturn(page);
     when(reservationBookRepository.findByReservationId(reservation.getId())).thenReturn(List.of());
@@ -62,17 +62,20 @@ class ReservationServiceTest {
   void create_savesReservationWithBooks() {
     var bookId = UUID.randomUUID();
     var book = Book.builder().id(bookId).title("Test Book").build();
-    var input = new CreateReservationDTO(LocalDate.now(),
-        List.of(new CreateArrivalBookDTO(bookId, 2)));
+    var input =
+        new CreateReservationDTO(LocalDate.now(), List.of(new CreateArrivalBookDTO(bookId, 2)));
 
     when(bookRepository.findById(bookId)).thenReturn(Optional.of(book));
     when(reservationRepository.save(any(Reservation.class)))
-        .thenAnswer(invocation -> {
-          var r = invocation.getArgument(0, Reservation.class);
-          return Reservation.builder().id(UUID.randomUUID())
-              .reservationDate(r.getReservationDate())
-              .status(r.getStatus()).build();
-        });
+        .thenAnswer(
+            invocation -> {
+              var r = invocation.getArgument(0, Reservation.class);
+              return Reservation.builder()
+                  .id(UUID.randomUUID())
+                  .reservationDate(r.getReservationDate())
+                  .status(r.getStatus())
+                  .build();
+            });
     when(reservationBookRepository.save(any(ReservationBook.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
 
