@@ -13,6 +13,9 @@ import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.bookshop.AuthorRepository;
 import com.example.demo.repository.bookshop.BookRepository;
 import com.example.demo.repository.bookshop.GenreRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -28,11 +31,33 @@ public class BookService {
   private final GenreRepository genreRepository;
   private final AuthorRepository authorRepository;
 
+  @PersistenceContext private EntityManager em;
+
   @Transactional(readOnly = true)
   public List<BookSummaryResponse> findAll(UUID genreId, UUID authorId, String search) {
-    return bookRepository.findByFilters(genreId, authorId, search).stream()
-        .map(this::toSummaryResponse)
-        .toList();
+    var parts = new ArrayList<String>();
+    parts.add("SELECT b FROM Book b WHERE 1=1");
+    if (genreId != null) {
+      parts.add("AND b.genre.id = :genreId");
+    }
+    if (authorId != null) {
+      parts.add("AND EXISTS (SELECT 1 FROM b.authors a WHERE a.id = :authorId)");
+    }
+    if (search != null && !search.isBlank()) {
+      parts.add(
+          "AND (LOWER(b.title) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(b.isbn) LIKE LOWER(CONCAT('%', :search, '%')))");
+    }
+    TypedQuery<Book> query = em.createQuery(String.join(" ", parts), Book.class);
+    if (genreId != null) {
+      query.setParameter("genreId", genreId);
+    }
+    if (authorId != null) {
+      query.setParameter("authorId", authorId);
+    }
+    if (search != null && !search.isBlank()) {
+      query.setParameter("search", search);
+    }
+    return query.getResultList().stream().map(this::toSummaryResponse).toList();
   }
 
   public BookResponse findById(UUID id) {

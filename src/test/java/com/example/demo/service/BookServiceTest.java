@@ -12,15 +12,18 @@ import com.example.demo.exception.ResourceConflictException;
 import com.example.demo.repository.bookshop.AuthorRepository;
 import com.example.demo.repository.bookshop.BookRepository;
 import com.example.demo.repository.bookshop.GenreRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class BookServiceTest {
@@ -28,30 +31,41 @@ class BookServiceTest {
   @Mock private BookRepository bookRepository;
   @Mock private GenreRepository genreRepository;
   @Mock private AuthorRepository authorRepository;
+  @Mock private EntityManager em;
 
-  @InjectMocks private BookService bookService;
+  private BookService bookService;
+
+  @BeforeEach
+  void setUp() {
+    bookService = new BookService(bookRepository, genreRepository, authorRepository);
+    ReflectionTestUtils.setField(bookService, "em", em);
+  }
 
   @Test
-  void findAll_withGenreFilter_callsFindByFilters() {
+  void findAll_withGenreFilter() {
     var genre = Genre.builder().id(UUID.randomUUID()).name("Fiction").build();
     var book = Book.builder().id(UUID.randomUUID()).title("Test").genre(genre).build();
-    when(bookRepository.findByFilters(any(), any(), any())).thenReturn(List.of(book));
+    var query = mock(TypedQuery.class);
+    when(em.createQuery(anyString(), eq(Book.class))).thenReturn(query);
+    when(query.setParameter(anyString(), any())).thenReturn(query);
+    when(query.getResultList()).thenReturn(List.of(book));
 
     var result = bookService.findAll(genre.getId(), null, null);
 
     assertEquals(1, result.size());
     assertEquals("Test", result.get(0).getTitle());
-    verify(bookRepository).findByFilters(genre.getId(), null, null);
   }
 
   @Test
-  void findAll_withSearch_callsFindByFilters() {
-    when(bookRepository.findByFilters(any(), any(), any())).thenReturn(List.of());
+  void findAll_withSearch() {
+    var query = mock(TypedQuery.class);
+    when(em.createQuery(anyString(), eq(Book.class))).thenReturn(query);
+    when(query.setParameter(anyString(), any())).thenReturn(query);
+    when(query.getResultList()).thenReturn(List.of());
 
     var result = bookService.findAll(null, null, "harry");
 
     assertEquals(0, result.size());
-    verify(bookRepository).findByFilters(null, null, "harry");
   }
 
   @Test
