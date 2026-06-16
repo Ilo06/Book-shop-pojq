@@ -22,8 +22,9 @@ public class BookCopyController {
 
   @GetMapping
   public ResponseEntity<List<BookCopyResponse>> listBookCopies(
+      @RequestParam(required = false) UUID bookId,
       @RequestParam(required = false) BookStatus status) {
-    return ResponseEntity.ok(bookCopyService.findAll(status));
+    return ResponseEntity.ok(bookCopyService.findAll(bookId, status));
   }
 
   @GetMapping("/{copyId}")

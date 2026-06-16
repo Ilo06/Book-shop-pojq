@@ -21,7 +21,16 @@ public class BookCopyService {
   private final BookCopyRepository bookCopyRepository;
   private final BookService bookService;
 
-  public List<BookCopyResponse> findAll(BookStatus status) {
+  public List<BookCopyResponse> findAll(UUID bookId, BookStatus status) {
+    if (bookId != null && status != null) {
+      bookService.getOrThrow(bookId);
+      return bookCopyRepository.findByBookIdAndStatus(bookId, status).stream()
+          .map(this::toResponse)
+          .toList();
+    }
+    if (bookId != null) {
+      return findByBookId(bookId);
+    }
     List<BookCopy> copies =
         status != null ? bookCopyRepository.findByStatus(status) : bookCopyRepository.findAll();
     return copies.stream().map(this::toResponse).toList();

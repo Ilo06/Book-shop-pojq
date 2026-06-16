@@ -16,6 +16,8 @@ public interface BookCopyRepository extends JpaRepository<BookCopy, UUID> {
 
   List<BookCopy> findByStatus(BookStatus status);
 
+  List<BookCopy> findByBookIdAndStatus(UUID bookId, BookStatus status);
+
   @Query(
       """
       SELECT b.id      AS bookId,

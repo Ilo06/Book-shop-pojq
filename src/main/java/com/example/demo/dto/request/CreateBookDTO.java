@@ -21,7 +21,7 @@ public class CreateBookDTO {
   private String title;
 
   @NotBlank
-  @Pattern(regexp = "^(97[89])?[0-9]{9}[0-9X]$", message = "Invalid ISBN format")
+  @Pattern(regexp = "^(97[89])?[0-9]{9}[0-9X]$|^[0-9]{13}$", message = "Invalid ISBN format")
   private String isbn;
 
   private String description;
