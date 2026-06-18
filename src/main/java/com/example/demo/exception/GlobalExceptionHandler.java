@@ -4,8 +4,11 @@ import java.time.LocalDateTime;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @Slf4j
 @RestControllerAdvice
@@ -38,9 +41,9 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(error, HttpStatus.UNPROCESSABLE_ENTITY);
   }
 
-  @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
+  @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ErrorResponse> handleValidationException(
-      org.springframework.web.bind.MethodArgumentNotValidException ex) {
+      MethodArgumentNotValidException ex) {
     String details =
         ex.getBindingResult().getFieldErrors().stream()
             .map(error -> error.getField() + ": " + error.getDefaultMessage())
@@ -54,9 +57,8 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
   }
 
-  @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
-  public ResponseEntity<ErrorResponse> handleMalformedJson(
-      org.springframework.http.converter.HttpMessageNotReadableException ex) {
+  @ExceptionHandler(HttpMessageNotReadableException.class)
+  public ResponseEntity<ErrorResponse> handleMalformedJson(HttpMessageNotReadableException ex) {
     ErrorResponse error =
         new ErrorResponse(
             HttpStatus.BAD_REQUEST.value(),
@@ -66,10 +68,8 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
   }
 
-  @ExceptionHandler(
-      org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
-  public ResponseEntity<ErrorResponse> handleTypeMismatch(
-      org.springframework.web.method.annotation.MethodArgumentTypeMismatchException ex) {
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
 
     String targetType =
         ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown type";
@@ -86,6 +86,15 @@ public class GlobalExceptionHandler {
             message,
             LocalDateTime.now());
     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(RuntimeException.class)
+  public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex) {
+    log.error(ex.getMessage(), ex);
+    ErrorResponse error =
+        new ErrorResponse(
+            500, "Internal Server Error", "Failed to process request", LocalDateTime.now());
+    return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
   @ExceptionHandler(Exception.class)
