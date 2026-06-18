@@ -13,10 +13,6 @@ import com.example.demo.repository.bookshop.BookRepository;
 import com.example.demo.repository.bookshop.GenreRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -27,19 +23,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class BookServiceTest {
 
-    @Mock
     private BookRepository bookRepository;
-
-    @Mock
     private GenreRepository genreRepository;
-
-    @Mock
     private AuthorRepository authorRepository;
-
-    @InjectMocks
     private BookService bookService;
 
     private UUID genreId;
@@ -51,6 +39,12 @@ class BookServiceTest {
 
     @BeforeEach
     void setUp() {
+        bookRepository = mock(BookRepository.class);
+        genreRepository = mock(GenreRepository.class);
+        authorRepository = mock(AuthorRepository.class);
+
+        bookService = new BookService(bookRepository, genreRepository, authorRepository);
+
         genreId = UUID.randomUUID();
         authorId = UUID.randomUUID();
         UUID bookId = UUID.randomUUID();
