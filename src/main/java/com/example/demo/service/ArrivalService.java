@@ -47,9 +47,7 @@ public class ArrivalService {
     Arrival savedArrival = arrivalRepository.save(arrival);
 
     List<ArrivalBook> arrivalBooks =
-        input.getBooks().stream()
-            .map(dto -> createArrivalBook(savedArrival, dto))
-            .toList();
+        input.getBooks().stream().map(dto -> createArrivalBook(savedArrival, dto)).toList();
 
     savedArrival.setBooks(arrivalBookRepository.saveAll(arrivalBooks));
     return toResponse(savedArrival);
@@ -75,8 +73,7 @@ public class ArrivalService {
             : arrival.getBooks().stream()
                 .map(
                     ab ->
-                        new ArrivalResponse.ArrivalBookLine(
-                            ab.getBook().getId(), ab.getQuantity()))
+                        new ArrivalResponse.ArrivalBookLine(ab.getBook().getId(), ab.getQuantity()))
                 .toList();
 
     return ArrivalResponse.builder()

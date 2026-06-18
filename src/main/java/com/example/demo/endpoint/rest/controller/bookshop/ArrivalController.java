@@ -29,8 +29,7 @@ public class ArrivalController {
   }
 
   @PostMapping
-  public ResponseEntity<ArrivalResponse> createArrival(
-      @Valid @RequestBody CreateArrivalDTO input) {
+  public ResponseEntity<ArrivalResponse> createArrival(@Valid @RequestBody CreateArrivalDTO input) {
     return ResponseEntity.status(HttpStatus.CREATED).body(arrivalService.create(input));
   }
 }

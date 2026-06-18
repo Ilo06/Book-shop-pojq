@@ -27,8 +27,7 @@ public class ReservationController {
   }
 
   @GetMapping("/{reservationId}")
-  public ResponseEntity<ReservationResponse> getReservation(
-      @PathVariable UUID reservationId) {
+  public ResponseEntity<ReservationResponse> getReservation(@PathVariable UUID reservationId) {
     return ResponseEntity.ok(reservationService.findById(reservationId));
   }
 

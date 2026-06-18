@@ -32,7 +32,8 @@ public class ReservationService {
   public List<ReservationResponse> findAll(ReservationStatus status) {
     List<Reservation> reservations =
         status != null
-            ? reservationRepository.findByStatus(status, PageRequest.of(0, Integer.MAX_VALUE))
+            ? reservationRepository
+                .findByStatus(status, PageRequest.of(0, Integer.MAX_VALUE))
                 .getContent()
             : reservationRepository.findAll();
     return reservations.stream().map(this::toResponse).toList();
@@ -77,11 +78,11 @@ public class ReservationService {
   private Reservation getOrThrow(UUID id) {
     return reservationRepository
         .findById(id)
-        .orElseThrow(
-            () -> new ResourceNotFoundException("Reservation not found with id: " + id));
+        .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + id));
   }
 
-  private ReservationBook createReservationBook(Reservation reservation, QuantifiedBookCopyDTO dto) {
+  private ReservationBook createReservationBook(
+      Reservation reservation, QuantifiedBookCopyDTO dto) {
     BookCopy bookCopy =
         bookCopyRepository
             .findById(dto.getBookCopyId())
