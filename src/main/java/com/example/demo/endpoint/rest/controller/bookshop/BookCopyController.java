@@ -22,8 +22,7 @@ public class BookCopyController {
   private final BookService bookService;
   private final BookCopyService bookCopyService;
 
-  @ModelAttribute // Just found out you use this instead of repeating the same check for each
-  // request
+  @ModelAttribute
   private void checkIfBookExists(@PathVariable UUID bookId) {
     bookService.getOrThrow(bookId);
   }

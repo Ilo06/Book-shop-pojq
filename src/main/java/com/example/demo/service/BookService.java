@@ -30,9 +30,11 @@ public class BookService {
   private final AuthorRepository authorRepository;
 
   public List<BookSummaryResponse> findAll(UUID genreId, UUID authorId, String search) {
-    return bookRepository.findByFilters(genreId, authorId, search).stream()
-        .map(this::toSummaryResponse)
-        .toList();
+    List<Book> books =
+        (genreId == null && authorId == null && (search == null || search.isBlank()))
+            ? bookRepository.findAll()
+            : bookRepository.findByFilters(genreId, authorId, search);
+    return books.stream().map(this::toSummaryResponse).toList();
   }
 
   public BookResponse findById(UUID id) {

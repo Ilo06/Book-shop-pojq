@@ -55,7 +55,7 @@ public class GenreService {
     Genre genre = getOrThrow(id);
     try {
       genreRepository.delete(genre);
-      genreRepository.flush(); // force FK check within the transaction
+      genreRepository.flush();
     } catch (DataIntegrityViolationException ex) {
       throw new ResourceConflictException(
           "Cannot delete genre '"
