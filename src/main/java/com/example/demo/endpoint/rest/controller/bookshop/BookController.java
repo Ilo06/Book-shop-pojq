@@ -3,7 +3,6 @@ package com.example.demo.endpoint.rest.controller.bookshop;
 import com.example.demo.dto.request.CreateBookDTO;
 import com.example.demo.dto.response.BookResponse;
 import com.example.demo.dto.response.BookSummaryResponse;
-import com.example.demo.service.BookCopyService;
 import com.example.demo.service.BookService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 public class BookController {
 
   private final BookService bookService;
-  private final BookCopyService bookCopyService;
 
   @GetMapping
   public ResponseEntity<List<BookSummaryResponse>> listBooks(
