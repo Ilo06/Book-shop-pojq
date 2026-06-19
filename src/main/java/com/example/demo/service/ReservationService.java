@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.dto.request.CreateReservationDTO;
 import com.example.demo.dto.request.PatchReservationDTO;
 import com.example.demo.dto.request.QuantifiedBookCopyDTO;
+import com.example.demo.dto.response.ReservationBookLine;
 import com.example.demo.dto.response.ReservationResponse;
 import com.example.demo.entity.BookCopy;
 import com.example.demo.entity.Reservation;
@@ -96,14 +97,11 @@ public class ReservationService {
   }
 
   private ReservationResponse toResponse(Reservation reservation) {
-    List<ReservationResponse.ReservationBookLine> lines =
+    List<ReservationBookLine> lines =
         reservation.getBooks() == null
             ? List.of()
             : reservation.getBooks().stream()
-                .map(
-                    rb ->
-                        new ReservationResponse.ReservationBookLine(
-                            rb.getBook().getId(), rb.getQuantity()))
+                .map(rb -> new ReservationBookLine(rb.getBook().getId(), rb.getQuantity()))
                 .toList();
 
     return ReservationResponse.builder()

@@ -17,12 +17,4 @@ public class ArrivalResponse {
   private UUID id;
   private LocalDate arrivalDate;
   private List<ArrivalBookLine> books;
-
-  @Data
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class ArrivalBookLine {
-    private UUID bookCopyId;
-    private int quantity;
-  }
 }

@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 public class BookController {
 
   private final BookService bookService;
-  private final BookCopyService bookCopyService;
 
   @GetMapping
   public ResponseEntity<List<BookSummaryResponse>> listBooks(

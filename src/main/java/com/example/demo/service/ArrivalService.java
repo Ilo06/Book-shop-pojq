@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.dto.request.CreateArrivalDTO;
 import com.example.demo.dto.request.QuantifiedBookCopyDTO;
+import com.example.demo.dto.response.ArrivalBookLine;
 import com.example.demo.dto.response.ArrivalResponse;
 import com.example.demo.entity.Arrival;
 import com.example.demo.entity.ArrivalBook;
@@ -67,13 +68,11 @@ public class ArrivalService {
   }
 
   private ArrivalResponse toResponse(Arrival arrival) {
-    List<ArrivalResponse.ArrivalBookLine> lines =
+    List<ArrivalBookLine> lines =
         arrival.getBooks() == null
             ? List.of()
             : arrival.getBooks().stream()
-                .map(
-                    ab ->
-                        new ArrivalResponse.ArrivalBookLine(ab.getBook().getId(), ab.getQuantity()))
+                .map(ab -> new ArrivalBookLine(ab.getBook().getId(), ab.getQuantity()))
                 .toList();
 
     return ArrivalResponse.builder()

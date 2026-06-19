@@ -19,12 +19,4 @@ public class ReservationResponse {
   private LocalDateTime reservationDate;
   private ReservationStatus status;
   private List<ReservationBookLine> books;
-
-  @Data
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class ReservationBookLine {
-    private UUID bookCopyId;
-    private int quantity;
-  }
 }
