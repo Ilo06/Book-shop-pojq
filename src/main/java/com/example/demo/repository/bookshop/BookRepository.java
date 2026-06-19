@@ -13,17 +13,18 @@ public interface BookRepository extends JpaRepository<Book, UUID> {
 
   boolean existsByIsbn(String isbn);
 
+  // Had to cast everything to make it work
   @Query(
       """
       SELECT b FROM Book b
-      WHERE (:genreId  IS NULL OR b.genre.id = :genreId)
-        AND (:authorId IS NULL OR EXISTS (
-              SELECT 1 FROM b.authors a WHERE a.id = :authorId))
-        AND (:search   IS NULL OR
+      WHERE (CAST(:genreId as uuid)  IS NULL OR b.genre.id = :genreId)
+        AND (CAST(:authorId as uuid) IS NULL OR EXISTS (
+              SELECT 1 FROM Author a JOIN a.books ab WHERE ab.id = b.id AND a.id = :authorId))
+        AND (CAST(:search AS string)   IS NULL OR
               CAST(b.title AS string) ILIKE CAST(CONCAT('%', :search, '%') AS string ) OR
               CAST(b.isbn AS string)  ILIKE CAST(CONCAT('%', :search, '%') AS string))
       """)
-  List<Book> findByFilters( // This won't work, i cant figure out why
+  List<Book> findByFilters(
       @Param("genreId") UUID genreId,
       @Param("authorId") UUID authorId,
       @Param("search") String search);
