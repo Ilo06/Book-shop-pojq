@@ -1,5 +1,11 @@
 package com.example.demo.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import com.example.demo.dto.request.CreateBookDTO;
 import com.example.demo.dto.response.AuthorResponse;
 import com.example.demo.dto.response.BookResponse;
@@ -15,6 +21,9 @@ import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.service.BookCopyService;
 import com.example.demo.service.BookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,16 +31,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest({BookController.class, GlobalExceptionHandler.class})
 class BookControllerTest {
@@ -87,8 +86,7 @@ class BookControllerTest {
             .description(book.getDescription())
             .publishDate(book.getPublishDate())
             .genre(genreResponse)
-            .authors(
-                List.of(authorResponse))
+            .authors(List.of(authorResponse))
             .build();
 
     when(bookService.findById(book.getId())).thenReturn(response);
@@ -158,8 +156,7 @@ class BookControllerTest {
             .description(input.getDescription())
             .publishDate(input.getPublishDate())
             .genre(genreResponse)
-            .authors(
-                List.of(authorResponse))
+            .authors(List.of(authorResponse))
             .build();
 
     when(bookService.create(any(CreateBookDTO.class))).thenReturn(response);
@@ -229,8 +226,7 @@ class BookControllerTest {
             .description(input.getDescription())
             .publishDate(input.getPublishDate())
             .genre(genreResponse)
-            .authors(
-                List.of(authorResponse))
+            .authors(List.of(authorResponse))
             .build();
 
     when(bookService.update(eq(book.getId()), any(CreateBookDTO.class))).thenReturn(response);
