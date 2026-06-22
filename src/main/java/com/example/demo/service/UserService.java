@@ -19,46 +19,47 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+  private final UserRepository userRepository;
+  private final PasswordEncoder passwordEncoder;
 
-    public PageResponse<UserResponse> findAll(Pageable pageable) {
-        return PageResponse.of(userRepository.findAll(pageable).map(this::toResponse));
+  public PageResponse<UserResponse> findAll(Pageable pageable) {
+    return PageResponse.of(userRepository.findAll(pageable).map(this::toResponse));
+  }
+
+  public UserResponse findById(UUID id) {
+    return toResponse(getOrThrow(id));
+  }
+
+  @Transactional
+  public UserResponse create(CreateUserDTO input) {
+    if (userRepository.findByUsername(input.getUsername()).isPresent()) {
+      throw new ResourceConflictException(
+          "User with username '" + input.getUsername() + "' already exists");
     }
 
-    public UserResponse findById(UUID id) {
-        return toResponse(getOrThrow(id));
-    }
+    User user =
+        User.builder()
+            .username(input.getUsername())
+            .password(passwordEncoder.encode(input.getPassword()))
+            .role(input.getRole() != null ? input.getRole() : UserRole.USER)
+            .build();
 
-    @Transactional
-    public UserResponse create(CreateUserDTO input) {
-        if (userRepository.findByUsername(input.getUsername()).isPresent()) {
-            throw new ResourceConflictException(
-                    "User with username '" + input.getUsername() + "' already exists");
-        }
+    return toResponse(userRepository.save(user));
+  }
 
-        User user = User.builder()
-                .username(input.getUsername())
-                .password(passwordEncoder.encode(input.getPassword()))
-                .role(input.getRole() != null ? input.getRole() : UserRole.USER)
-                .build();
+  @Transactional
+  public void delete(UUID id) {
+    User user = getOrThrow(id);
+    userRepository.delete(user);
+  }
 
-        return toResponse(userRepository.save(user));
-    }
+  private User getOrThrow(UUID id) {
+    return userRepository
+        .findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+  }
 
-    @Transactional
-    public void delete(UUID id) {
-        User user = getOrThrow(id);
-        userRepository.delete(user);
-    }
-
-    private User getOrThrow(UUID id) {
-        return userRepository
-                .findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
-    }
-
-    private UserResponse toResponse(User user) {
-        return UserResponse.from(user);
-    }
+  private UserResponse toResponse(User user) {
+    return UserResponse.from(user);
+  }
 }

@@ -11,12 +11,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateUserDTO {
-    @NotBlank
-    @Size(min = 1, max = 255)
-    private String username;
+  @NotBlank
+  @Size(min = 1, max = 255)
+  private String username;
 
-    @NotBlank
-    private String password;
+  @NotBlank private String password;
 
-    private UserRole role;
+  private UserRole role;
 }

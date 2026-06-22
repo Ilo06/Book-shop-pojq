@@ -13,15 +13,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserResponse {
-    private UUID id;
-    private String username;
-    private UserRole role;
+  private UUID id;
+  private String username;
+  private UserRole role;
 
-    public static UserResponse from(User user) {
-        return UserResponse.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .role(user.getRole())
-                .build();
-    }
+  public static UserResponse from(User user) {
+    return UserResponse.builder()
+        .id(user.getId())
+        .username(user.getUsername())
+        .role(user.getRole())
+        .build();
+  }
 }
