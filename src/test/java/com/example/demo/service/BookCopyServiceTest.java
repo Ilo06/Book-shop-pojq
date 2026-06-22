@@ -136,11 +136,12 @@ class BookCopyServiceTest {
   void create_shouldReturnBookCopyResponse() {
     when(bookService.getOrThrow(bookId)).thenReturn(book);
     when(bookCopyRepository.save(any(BookCopy.class)))
-        .thenAnswer(invocation -> {
-          BookCopy saved = invocation.getArgument(0);
-          saved.setId(copyId);
-          return saved;
-        });
+        .thenAnswer(
+            invocation -> {
+              BookCopy saved = invocation.getArgument(0);
+              saved.setId(copyId);
+              return saved;
+            });
 
     BookCopyResponse result = bookCopyService.create(createInput);
 
@@ -157,11 +158,12 @@ class BookCopyServiceTest {
     createInput.setStatus(null);
     when(bookService.getOrThrow(bookId)).thenReturn(book);
     when(bookCopyRepository.save(any(BookCopy.class)))
-        .thenAnswer(invocation -> {
-          BookCopy saved = invocation.getArgument(0);
-          saved.setId(copyId);
-          return saved;
-        });
+        .thenAnswer(
+            invocation -> {
+              BookCopy saved = invocation.getArgument(0);
+              saved.setId(copyId);
+              return saved;
+            });
 
     BookCopyResponse result = bookCopyService.create(createInput);
 

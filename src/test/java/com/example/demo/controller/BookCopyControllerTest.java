@@ -140,8 +140,7 @@ class BookCopyControllerTest {
     UUID nonExistentCopyId = UUID.randomUUID();
     when(bookCopyService.findById(nonExistentCopyId))
         .thenThrow(
-            new ResourceNotFoundException(
-                "BookCopy not found with id: " + nonExistentCopyId));
+            new ResourceNotFoundException("BookCopy not found with id: " + nonExistentCopyId));
 
     mockMvc
         .perform(
@@ -153,8 +152,7 @@ class BookCopyControllerTest {
   @Test
   void getBookCopy_shouldReturn400_withInvalidCopyId() throws Exception {
     mockMvc
-        .perform(
-            get("/books/{bookId}/copies/invalid", bookId).accept(MediaType.APPLICATION_JSON))
+        .perform(get("/books/{bookId}/copies/invalid", bookId).accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest());
   }
 
@@ -219,8 +217,7 @@ class BookCopyControllerTest {
     UUID nonExistentCopyId = UUID.randomUUID();
     when(bookCopyService.patch(eq(nonExistentCopyId), any(PatchBookCopyDTO.class)))
         .thenThrow(
-            new ResourceNotFoundException(
-                "BookCopy not found with id: " + nonExistentCopyId));
+            new ResourceNotFoundException("BookCopy not found with id: " + nonExistentCopyId));
 
     mockMvc
         .perform(
@@ -248,9 +245,7 @@ class BookCopyControllerTest {
   void deleteBookCopy_shouldReturn404_withNonExistingCopy() throws Exception {
     when(bookService.getOrThrow(bookId)).thenReturn(book);
     UUID nonExistentCopyId = UUID.randomUUID();
-    doThrow(
-            new ResourceNotFoundException(
-                "BookCopy not found with id: " + nonExistentCopyId))
+    doThrow(new ResourceNotFoundException("BookCopy not found with id: " + nonExistentCopyId))
         .when(bookCopyService)
         .delete(nonExistentCopyId);
 
