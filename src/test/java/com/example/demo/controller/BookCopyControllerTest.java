@@ -133,4 +133,83 @@ class BookCopyControllerTest {
         .andExpect(jsonPath("$.status").value("AVAILABLE"))
         .andExpect(jsonPath("$.bookId").value(bookId.toString()));
   }
+
+  @Test
+  void getBookCopy_shouldReturn404_withNonExistingCopy() throws Exception {
+    when(bookService.getOrThrow(bookId)).thenReturn(book);
+    UUID nonExistentCopyId = UUID.randomUUID();
+    when(bookCopyService.findById(nonExistentCopyId))
+        .thenThrow(
+            new ResourceNotFoundException(
+                "BookCopy not found with id: " + nonExistentCopyId));
+
+    mockMvc
+        .perform(
+            get("/books/{bookId}/copies/{copyId}", bookId, nonExistentCopyId)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void getBookCopy_shouldReturn400_withInvalidCopyId() throws Exception {
+    mockMvc
+        .perform(
+            get("/books/{bookId}/copies/invalid", bookId).accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void createBookCopy_shouldReturn201() throws Exception {
+    when(bookService.getOrThrow(bookId)).thenReturn(book);
+    when(bookCopyService.create(any(CreateBookCopyDTO.class))).thenReturn(bookCopyResponse);
+
+    mockMvc
+        .perform(
+            post("/books/{bookId}/copies", bookId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createInput)))
+        .andExpect(status().isCreated())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.id").value(copyId.toString()))
+        .andExpect(jsonPath("$.status").value("AVAILABLE"))
+        .andExpect(jsonPath("$.type").value("PAPERBACK"));
+  }
+
+  @Test
+  void createBookCopy_shouldReturn400_withValidationError() throws Exception {
+    CreateBookCopyDTO invalidInput = new CreateBookCopyDTO();
+
+    mockMvc
+        .perform(
+            post("/books/{bookId}/copies", bookId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidInput)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void patchBookCopy_shouldReturn200() throws Exception {
+    BookCopyResponse patchedResponse =
+        BookCopyResponse.builder()
+            .id(copyId)
+            .bookId(bookId)
+            .status(BookStatus.SOLD_OUT)
+            .type(BookCopyType.PAPERBACK)
+            .price(new BigDecimal("19.99"))
+            .location("A1")
+            .build();
+
+    when(bookService.getOrThrow(bookId)).thenReturn(book);
+    when(bookCopyService.patch(eq(copyId), any(PatchBookCopyDTO.class)))
+        .thenReturn(patchedResponse);
+
+    mockMvc
+        .perform(
+            patch("/books/{bookId}/copies/{copyId}", bookId, copyId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(patchInput)))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.status").value("SOLD_OUT"));
+  }
 }
