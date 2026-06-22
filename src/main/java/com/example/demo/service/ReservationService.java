@@ -8,9 +8,11 @@ import com.example.demo.dto.response.ReservationResponse;
 import com.example.demo.entity.BookCopy;
 import com.example.demo.entity.Reservation;
 import com.example.demo.entity.ReservationBook;
+import com.example.demo.entity.enums.BookStatus;
 import com.example.demo.entity.enums.ReservationStatus;
 import com.example.demo.entity.keys.ReservationBookId;
 import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.exception.UnprocessableEntityException;
 import com.example.demo.repository.bookshop.BookCopyRepository;
 import com.example.demo.repository.bookshop.ReservationBookRepository;
 import com.example.demo.repository.bookshop.ReservationRepository;
@@ -46,6 +48,28 @@ public class ReservationService {
 
   @Transactional
   public ReservationResponse create(CreateReservationDTO input) {
+    input
+        .getBooks()
+        .forEach(
+            dto -> {
+              BookCopy copy =
+                  bookCopyRepository
+                      .findById(dto.getBookCopyId())
+                      .orElseThrow(
+                          () ->
+                              new ResourceNotFoundException(
+                                  "BookCopy not found with id: " + dto.getBookCopyId()));
+
+              if (copy.getStatus() != BookStatus.AVAILABLE) {
+                throw new UnprocessableEntityException(
+                    "BookCopy with id: "
+                        + dto.getBookCopyId()
+                        + " is not available (current status: "
+                        + copy.getStatus()
+                        + ")");
+              }
+            });
+
     LocalDateTime reservationDate =
         input.getDate() != null ? input.getDate().atStartOfDay() : LocalDateTime.now();
 
@@ -66,13 +90,53 @@ public class ReservationService {
   @Transactional
   public ReservationResponse patch(UUID id, PatchReservationDTO input) {
     Reservation reservation = getOrThrow(id);
-    reservation.setStatus(input.getStatus());
-    return toResponse(reservationRepository.save(reservation));
+    ReservationStatus oldStatus = reservation.getStatus();
+    ReservationStatus newStatus = input.getStatus();
+
+    reservation.setStatus(newStatus);
+    reservationRepository.save(reservation);
+
+    List<ReservationBook> books = reservationBookRepository.findByReservationId(id);
+
+    if (newStatus == ReservationStatus.CONFIRMED && oldStatus == ReservationStatus.PENDING) {
+      books.forEach(
+          rb -> {
+            BookCopy copy = rb.getBook();
+            copy.setStatus(BookStatus.RESERVED);
+            bookCopyRepository.save(copy);
+          });
+    } else if (newStatus == ReservationStatus.CANCELLED) {
+      books.forEach(
+          rb -> {
+            BookCopy copy = rb.getBook();
+            if (copy.getStatus() == BookStatus.RESERVED) {
+              copy.setStatus(BookStatus.AVAILABLE);
+              bookCopyRepository.save(copy);
+            }
+          });
+    }
+
+    reservation.setBooks(books);
+    return toResponse(reservation);
   }
 
   @Transactional
   public void delete(UUID id) {
     Reservation reservation = getOrThrow(id);
+
+    if (reservation.getStatus() == ReservationStatus.PENDING
+        || reservation.getStatus() == ReservationStatus.CONFIRMED) {
+      List<ReservationBook> books = reservationBookRepository.findByReservationId(id);
+      books.forEach(
+          rb -> {
+            BookCopy copy = rb.getBook();
+            if (copy.getStatus() == BookStatus.RESERVED) {
+              copy.setStatus(BookStatus.AVAILABLE);
+              bookCopyRepository.save(copy);
+            }
+          });
+    }
+
     reservationRepository.delete(reservation);
   }
 

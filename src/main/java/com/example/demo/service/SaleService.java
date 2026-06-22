@@ -6,8 +6,10 @@ import com.example.demo.dto.response.SaleResponse;
 import com.example.demo.entity.BookCopy;
 import com.example.demo.entity.Sale;
 import com.example.demo.entity.SaleBookCopy;
+import com.example.demo.entity.enums.BookStatus;
 import com.example.demo.entity.keys.SaleBookCopyId;
 import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.exception.UnprocessableEntityException;
 import com.example.demo.repository.bookshop.BookCopyRepository;
 import com.example.demo.repository.bookshop.SaleBookCopyRepository;
 import com.example.demo.repository.bookshop.SaleRepository;
@@ -35,21 +37,45 @@ public class SaleService {
 
   @Transactional
   public SaleResponse save(@Valid CreateSaleDTO sale) {
-    sale.getBookCopyIds()
-        .forEach(
-            bookCopyId -> {
-              if (bookCopyRepository.findById(bookCopyId).isEmpty()) {
-                throw new ResourceNotFoundException(
-                    "Book copy with id: " + bookCopyId + " not found");
-              }
-            });
+    List<BookCopy> copies =
+        sale.getBookCopyIds().stream()
+            .map(
+                bookCopyId -> {
+                  BookCopy copy =
+                      bookCopyRepository
+                          .findById(bookCopyId)
+                          .orElseThrow(
+                              () ->
+                                  new ResourceNotFoundException(
+                                      "Book copy with id: " + bookCopyId + " not found"));
+
+                  if (copy.getStatus() != BookStatus.AVAILABLE) {
+                    throw new UnprocessableEntityException(
+                        "Book copy with id: "
+                            + bookCopyId
+                            + " is not available (current status: "
+                            + copy.getStatus()
+                            + ")");
+                  }
+                  return copy;
+                })
+            .toList();
 
     Sale saleToSave = Sale.builder().saleDate(sale.getSaleDate()).build();
     Sale newSale = saleRepository.save(saleToSave);
 
     List<SaleBookCopy> saleItems =
-        sale.getBookCopyIds().stream()
-            .map(bookCopyId -> createSaleBookCopy(newSale, bookCopyId))
+        copies.stream()
+            .map(
+                copy -> {
+                  copy.setStatus(BookStatus.SOLD_OUT);
+                  bookCopyRepository.save(copy);
+                  return SaleBookCopy.builder()
+                      .saleBookCopyId(new SaleBookCopyId(newSale.getId(), copy.getId()))
+                      .sale(newSale)
+                      .bookCopy(copy)
+                      .build();
+                })
             .toList();
 
     newSale.setBooks(saleBookCopyRepository.saveAll(saleItems));
@@ -64,22 +90,6 @@ public class SaleService {
     Sale sale = optionalSale.get();
     sale.setBooks(saleBookCopyRepository.findBySaleId(sale.getId()));
     return toResponse(sale);
-  }
-
-  private SaleBookCopy createSaleBookCopy(Sale sale, UUID bookCopyId) {
-    BookCopy bookCopy =
-        bookCopyRepository
-            .findById(bookCopyId)
-            .orElseThrow(
-                () ->
-                    new ResourceNotFoundException(
-                        "Book copy with id: " + bookCopyId + " not found"));
-
-    return SaleBookCopy.builder()
-        .saleBookCopyId(new SaleBookCopyId(sale.getId(), bookCopy.getId()))
-        .sale(sale)
-        .bookCopy(bookCopy)
-        .build();
   }
 
   private SaleResponse toResponse(Sale sale) {
