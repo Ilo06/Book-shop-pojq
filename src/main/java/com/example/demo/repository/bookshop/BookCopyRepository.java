@@ -32,24 +32,16 @@ public interface BookCopyRepository extends JpaRepository<BookCopy, UUID> {
 
   @Query(
     """
-    SELECT COUNT(bc) AS copies
-    FROM BookCopy AS bc
-    JOIN bc.book AS b
-    WHERE b.id = :bookId
+    WITH total_arrival AS (SELECT COALESCE(SUM(ab.quantity), 0) AS arrival
+                    FROM ArrivalBook AS ab
+                    WHERE ab.arrivalBookId.bookCopyId = :copyId),
+         total_sold AS (SELECT COALESCE(COUNT(sbc.bookCopy.id), 0) AS sold
+                    FROM SaleBookCopy AS sbc
+                    WHERE sbc.bookCopy.id = :copyId)
+    SELECT (arrival - sold)  AS copies FROM total_sold, total_arrival
     """
   )
-  Integer findAvailableCopiesPerBookId(@Param("bookId") UUID bookId);
-
-  @Query(
-          """
-          SELECT COUNT(bc) AS copies
-          FROM BookCopy AS bc
-          JOIN bc.book AS b
-          WHERE b.id = :bookId AND bc.type = LOWER(CAST(:bookType AS string))
-          """
-  )
-  Integer findAvailableCopiesTypePerBookId(@Param("bookId") UUID bookId,
-                              @Param("bookType") BookCopyType bookCopyType);
+  Integer findAvailableCopiesTypePerBookId(@Param("copyId") UUID copyId);
 
   @Query(
       """

@@ -28,4 +28,18 @@ public interface BookRepository extends JpaRepository<Book, UUID> {
       @Param("genreId") UUID genreId,
       @Param("authorId") UUID authorId,
       @Param("search") String search);
+
+  @Query(
+    """
+    WITH total_arrival AS (SELECT COALESCE(SUM(ab.quantity), 0) AS arrival
+                    FROM ArrivalBook AS ab
+                    JOIN BookCopy AS bc ON bc.id = ab.arrivalBookId.bookCopyId
+                    WHERE bc.book.id = :bookId),
+         total_sold AS (SELECT COALESCE(COUNT(sbc.bookCopy.id), 0) AS sold
+                    FROM SaleBookCopy AS sbc
+                    WHERE sbc.bookCopy.book.id = :bookId)
+    SELECT (arrival - sold)  AS copies FROM total_sold, total_arrival
+    """
+  )
+  Integer findAvailableCopiesPerBookId(@Param("bookId") UUID bookId);
 }
