@@ -56,4 +56,11 @@ public class BookController {
     bookService.delete(bookId);
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
+
+  @GetMapping("/{bookId}/stock")
+  public ResponseEntity<?> findAvailableCopiesPerBook(@PathVariable UUID bookId) {
+    return ResponseEntity.status(HttpStatus.OK)
+            .header("Content-Type", "application/json")
+            .body(bookService.getStock(bookId));
+  }
 }

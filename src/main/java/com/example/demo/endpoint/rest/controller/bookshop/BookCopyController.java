@@ -63,4 +63,11 @@ public class BookCopyController {
     bookCopyService.delete(copyId);
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }
+
+  @GetMapping("/{copyId}/stock")
+  public ResponseEntity<?> findAvailableCopiesPerBook(@PathVariable UUID copyId) {
+    return ResponseEntity.status(HttpStatus.OK)
+            .header("Content-Type", "application/json")
+            .body(bookCopyService.getStock(copyId));
+  }
 }
