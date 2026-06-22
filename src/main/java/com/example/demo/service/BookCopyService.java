@@ -71,6 +71,10 @@ public class BookCopyService {
     bookCopyRepository.delete(copy);
   }
 
+  public Integer getStock(UUID copyId) {
+    return bookCopyRepository.findAvailableCopiesTypePerBookId(copyId);
+  }
+
   public BookCopy getOrThrow(UUID id) {
     return bookCopyRepository
         .findById(id)

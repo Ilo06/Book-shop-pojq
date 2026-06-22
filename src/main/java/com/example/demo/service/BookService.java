@@ -91,6 +91,10 @@ public class BookService {
     bookRepository.delete(book);
   }
 
+  public Integer getStock(UUID id) {
+    return bookRepository.findAvailableCopiesPerBookId(id);
+  }
+
   public Book getOrThrow(UUID id) {
     return bookRepository
         .findById(id)
