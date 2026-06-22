@@ -186,4 +186,40 @@ class BookCopyServiceTest {
 
     assertThrows(ResourceNotFoundException.class, () -> bookCopyService.patch(id, patchInput));
   }
+
+  @Test
+  void delete_shouldDeleteCopy() {
+    when(bookCopyRepository.findById(copyId)).thenReturn(Optional.of(bookCopy));
+
+    bookCopyService.delete(copyId);
+
+    verify(bookCopyRepository).delete(bookCopy);
+  }
+
+  @Test
+  void delete_shouldThrowResourceNotFoundException_whenCopyNotFound() {
+    UUID id = UUID.randomUUID();
+    when(bookCopyRepository.findById(id)).thenReturn(Optional.empty());
+
+    assertThrows(ResourceNotFoundException.class, () -> bookCopyService.delete(id));
+    verify(bookCopyRepository, never()).delete(any());
+  }
+
+  @Test
+  void getOrThrow_shouldReturnBookCopy() {
+    when(bookCopyRepository.findById(copyId)).thenReturn(Optional.of(bookCopy));
+
+    BookCopy result = bookCopyService.getOrThrow(copyId);
+
+    assertEquals(copyId, result.getId());
+    assertEquals(book, result.getBook());
+  }
+
+  @Test
+  void getOrThrow_shouldThrowResourceNotFoundException() {
+    UUID id = UUID.randomUUID();
+    when(bookCopyRepository.findById(id)).thenReturn(Optional.empty());
+
+    assertThrows(ResourceNotFoundException.class, () -> bookCopyService.getOrThrow(id));
+  }
 }
