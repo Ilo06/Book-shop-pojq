@@ -123,4 +123,67 @@ class BookCopyServiceTest {
     assertEquals(copyId, result.getFirst().getId());
     assertEquals(bookId, result.getFirst().getBookId());
   }
+
+  @Test
+  void findByBookId_shouldThrowResourceNotFoundException_whenBookNotFound() {
+    when(bookService.getOrThrow(bookId))
+        .thenThrow(new ResourceNotFoundException("Book not found with id: " + bookId));
+
+    assertThrows(ResourceNotFoundException.class, () -> bookCopyService.findByBookId(bookId));
+  }
+
+  @Test
+  void create_shouldReturnBookCopyResponse() {
+    when(bookService.getOrThrow(bookId)).thenReturn(book);
+    when(bookCopyRepository.save(any(BookCopy.class)))
+        .thenAnswer(invocation -> {
+          BookCopy saved = invocation.getArgument(0);
+          saved.setId(copyId);
+          return saved;
+        });
+
+    BookCopyResponse result = bookCopyService.create(createInput);
+
+    assertNotNull(result.getId());
+    assertEquals(bookId, result.getBookId());
+    assertEquals(BookCopyType.PAPERBACK, result.getType());
+    assertEquals(new BigDecimal("19.99"), result.getPrice());
+    assertEquals("A1", result.getLocation());
+    assertEquals(BookStatus.AVAILABLE, result.getStatus());
+  }
+
+  @Test
+  void create_shouldDefaultStatusToAvailable_whenNotProvided() {
+    createInput.setStatus(null);
+    when(bookService.getOrThrow(bookId)).thenReturn(book);
+    when(bookCopyRepository.save(any(BookCopy.class)))
+        .thenAnswer(invocation -> {
+          BookCopy saved = invocation.getArgument(0);
+          saved.setId(copyId);
+          return saved;
+        });
+
+    BookCopyResponse result = bookCopyService.create(createInput);
+
+    assertEquals(BookStatus.AVAILABLE, result.getStatus());
+  }
+
+  @Test
+  void patch_shouldUpdateFields() {
+    when(bookCopyRepository.findById(copyId)).thenReturn(Optional.of(bookCopy));
+    when(bookCopyRepository.save(any(BookCopy.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    BookCopyResponse result = bookCopyService.patch(copyId, patchInput);
+
+    assertEquals(BookStatus.SOLD_OUT, result.getStatus());
+  }
+
+  @Test
+  void patch_shouldThrowResourceNotFoundException_whenCopyNotFound() {
+    UUID id = UUID.randomUUID();
+    when(bookCopyRepository.findById(id)).thenReturn(Optional.empty());
+
+    assertThrows(ResourceNotFoundException.class, () -> bookCopyService.patch(id, patchInput));
+  }
 }
