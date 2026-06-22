@@ -212,4 +212,52 @@ class BookCopyControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.status").value("SOLD_OUT"));
   }
+
+  @Test
+  void patchBookCopy_shouldReturn404_withNonExistingCopy() throws Exception {
+    when(bookService.getOrThrow(bookId)).thenReturn(book);
+    UUID nonExistentCopyId = UUID.randomUUID();
+    when(bookCopyService.patch(eq(nonExistentCopyId), any(PatchBookCopyDTO.class)))
+        .thenThrow(
+            new ResourceNotFoundException(
+                "BookCopy not found with id: " + nonExistentCopyId));
+
+    mockMvc
+        .perform(
+            patch("/books/{bookId}/copies/{copyId}", bookId, nonExistentCopyId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(patchInput)))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void deleteBookCopy_shouldReturn201() throws Exception {
+    when(bookService.getOrThrow(bookId)).thenReturn(book);
+    doNothing().when(bookCopyService).delete(copyId);
+
+    mockMvc
+        .perform(
+            delete("/books/{bookId}/copies/{copyId}", bookId, copyId)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    verify(bookCopyService).delete(copyId);
+  }
+
+  @Test
+  void deleteBookCopy_shouldReturn404_withNonExistingCopy() throws Exception {
+    when(bookService.getOrThrow(bookId)).thenReturn(book);
+    UUID nonExistentCopyId = UUID.randomUUID();
+    doThrow(
+            new ResourceNotFoundException(
+                "BookCopy not found with id: " + nonExistentCopyId))
+        .when(bookCopyService)
+        .delete(nonExistentCopyId);
+
+    mockMvc
+        .perform(
+            delete("/books/{bookId}/copies/{copyId}", bookId, nonExistentCopyId)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isNotFound());
+  }
 }
