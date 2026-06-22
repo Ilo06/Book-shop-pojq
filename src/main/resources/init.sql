@@ -9,14 +9,23 @@ DROP TABLE IF EXISTS book_author     CASCADE;
 DROP TABLE IF EXISTS book            CASCADE;
 DROP TABLE IF EXISTS author          CASCADE;
 DROP TABLE IF EXISTS genre           CASCADE;
+DROP TABLE IF EXISTS users           CASCADE;
 
 DROP TYPE IF EXISTS book_status        CASCADE;
 DROP TYPE IF EXISTS book_copy_type     CASCADE;
 DROP TYPE IF EXISTS reservation_status CASCADE;
+DROP TYPE IF EXISTS user_role          CASCADE;
 
 CREATE TYPE book_status         AS ENUM ('AVAILABLE', 'SOLD_OUT');
 CREATE TYPE book_copy_type      AS ENUM ('PAPERBACK', 'HARDBACK', 'POCKET');
 CREATE TYPE reservation_status  AS ENUM ('PENDING', 'CONFIRMED', 'CANCELLED');
+CREATE TYPE user_role           AS ENUM ('USER', 'ADMIN');
+
+CREATE TABLE users (
+    id          UUID            DEFAULT gen_random_uuid() PRIMARY KEY,
+    username    VARCHAR(255)    NOT NULL UNIQUE,
+    password    VARCHAR(255)    NOT NULL
+);
 
 CREATE TABLE author (
     id          UUID            DEFAULT gen_random_uuid() PRIMARY KEY,
