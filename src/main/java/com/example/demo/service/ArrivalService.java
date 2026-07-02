@@ -13,6 +13,8 @@ import com.example.demo.repository.bookshop.ArrivalBookRepository;
 import com.example.demo.repository.bookshop.ArrivalRepository;
 import com.example.demo.repository.bookshop.BookCopyRepository;
 import jakarta.transaction.Transactional;
+
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -43,7 +45,7 @@ public class ArrivalService {
   public ArrivalResponse create(CreateArrivalDTO input) {
     Arrival arrival =
         Arrival.builder()
-            .arrivalDate(input.getArrivalDate() != null ? input.getArrivalDate() : LocalDate.now())
+            .arrivalDateTime(input.getArrivalDateTime())
             .build();
     Arrival savedArrival = arrivalRepository.save(arrival);
 
@@ -77,7 +79,7 @@ public class ArrivalService {
 
     return ArrivalResponse.builder()
         .id(arrival.getId())
-        .arrivalDate(arrival.getArrivalDate())
+        .arrivalDateTime(arrival.getArrivalDateTime())
         .books(lines)
         .build();
   }

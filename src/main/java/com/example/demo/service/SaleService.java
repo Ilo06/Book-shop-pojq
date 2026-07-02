@@ -13,7 +13,10 @@ import com.example.demo.repository.bookshop.SaleBookCopyRepository;
 import com.example.demo.repository.bookshop.SaleRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import java.time.LocalDate;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,10 +30,10 @@ public class SaleService {
   private final SaleBookCopyRepository saleBookCopyRepository;
   private final BookCopyRepository bookCopyRepository;
 
-  public List<SaleResponse> findByDateBetween(LocalDate from, LocalDate to) {
-    if (from == null) from = LocalDate.of(1970, 1, 1);
-    if (to == null) to = LocalDate.now();
-    return saleRepository.findBySaleDateBetween(from, to).stream().map(this::toResponse).toList();
+  public List<SaleResponse> findByDateBetween(Instant from, Instant to) {
+    if (from == null) from = LocalDateTime.of(1970, 1, 1, 0, 0).toInstant(ZoneOffset.UTC);
+    if (to == null) to = Instant.now();
+    return saleRepository.findByCreationDateTimeBetween(from, to).stream().map(this::toResponse).toList();
   }
 
   @Transactional
@@ -44,7 +47,7 @@ public class SaleService {
               }
             });
 
-    Sale saleToSave = Sale.builder().saleDate(sale.getSaleDate()).build();
+    Sale saleToSave = Sale.builder().creationDateTime(sale.getCreationDateTime()).build();
     Sale newSale = saleRepository.save(saleToSave);
 
     List<SaleBookCopy> saleItems =
@@ -94,9 +97,12 @@ public class SaleService {
             .toList();
 
     return SaleResponse.builder()
-        .id(sale.getId())
-        .saleDate(sale.getSaleDate())
-        .books(bookResponses)
-        .build();
+            .id(sale.getId())
+            .creationDateTime(sale.getCreationDateTime())
+            .saleStatus(sale.getStatus())
+            .isReservation(sale.getIsReservation())
+            .finalizationDateTime(sale.getFinalizationDateTime())
+            .books(bookResponses)
+            .build();
   }
 }
