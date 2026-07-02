@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(name = "book")
@@ -35,14 +37,18 @@ public class Book {
   @Column(nullable = false)
   private LocalDate publishDate;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "genre_id", nullable = false)
-  private Genre genre;
+  @ManyToMany(fetch = FetchType.LAZY)
+  @JoinTable(name = "book_genres",
+          joinColumns = @JoinColumn(name = "book_id"),
+          inverseJoinColumns = @JoinColumn(name = "genre_id"))
+  @OnDelete(action = OnDeleteAction.SET_NULL)
+  private List<Genre> genres;
 
   @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(
       name = "book_author",
       joinColumns = @JoinColumn(name = "book_id"),
       inverseJoinColumns = @JoinColumn(name = "author_id"))
+  @OnDelete(action = OnDeleteAction.SET_NULL)
   private List<Author> authors;
 }
