@@ -3,7 +3,6 @@ package com.example.demo.endpoint.rest.controller.bookshop;
 import com.example.demo.dto.request.CreateBookCopyDTO;
 import com.example.demo.dto.request.PatchBookCopyDTO;
 import com.example.demo.dto.response.BookCopyResponse;
-import com.example.demo.entity.enums.BookStatus;
 import com.example.demo.service.BookCopyService;
 import com.example.demo.service.BookService;
 import jakarta.validation.Valid;
@@ -28,11 +27,10 @@ public class BookCopyController {
   }
 
   @GetMapping
-  public ResponseEntity<List<BookCopyResponse>> listBookCopies(
-      @RequestParam(required = false) BookStatus status) {
+  public ResponseEntity<List<BookCopyResponse>> listBookCopies(@PathVariable UUID bookId) {
     return ResponseEntity.status(HttpStatus.OK)
         .header("Content-Type", "application/json")
-        .body(bookCopyService.findAll(status));
+        .body(bookCopyService.findByBookId(bookId));
   }
 
   @GetMapping("/{copyId}")
@@ -65,9 +63,9 @@ public class BookCopyController {
   }
 
   @GetMapping("/{copyId}/stock")
-  public ResponseEntity<?> findAvailableCopiesPerBook(@PathVariable UUID copyId) {
+  public ResponseEntity<?> getBookCopyStock(@PathVariable UUID copyId) {
     return ResponseEntity.status(HttpStatus.OK)
             .header("Content-Type", "application/json")
-            .body(bookCopyService.getStock(copyId));
+            .body(bookCopyService.getStockByCopyId(copyId));
   }
 }
