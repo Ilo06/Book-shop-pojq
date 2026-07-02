@@ -1,7 +1,9 @@
 package com.example.demo.entity;
 
+import com.example.demo.entity.enums.SaleStatus;
 import jakarta.persistence.*;
-import java.time.LocalDate;
+
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -24,9 +26,23 @@ public class Sale {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  @Temporal(TemporalType.DATE)
+  @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private LocalDate saleDate;
+  @Builder.Default
+  private SaleStatus status = SaleStatus.PENDING;
+
+  @Column(nullable = false)
+  @Builder.Default
+  private Boolean isReservation = Boolean.FALSE;
+
+  @Temporal(TemporalType.TIMESTAMP)
+  @Column(nullable = false)
+  @Builder.Default
+  private Instant creationDateTime = Instant.now();
+
+  @Temporal(TemporalType.TIMESTAMP)
+  @Column
+  private Instant finalizationDateTime;
 
   @OneToMany(mappedBy = "sale", fetch = FetchType.LAZY)
   @Builder.Default
