@@ -1,8 +1,10 @@
 package com.example.demo.dto.response;
 
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+
+import com.example.demo.entity.enums.SaleStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +16,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SaleResponse {
   private UUID id;
-  private LocalDate saleDate;
+  private Instant creationDateTime;
+  private SaleStatus saleStatus;
+  private Instant finalizationDateTime;
+  private Boolean isReservation;
   private List<SaleBookCopyResponse> books;
 }

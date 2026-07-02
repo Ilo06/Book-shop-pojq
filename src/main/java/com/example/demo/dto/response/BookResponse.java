@@ -18,6 +18,6 @@ public class BookResponse {
   private String isbn;
   private String description;
   private LocalDate publishDate;
-  private GenreResponse genre;
+  private List<GenreResponse> genres;
   private List<AuthorResponse> authors;
 }
