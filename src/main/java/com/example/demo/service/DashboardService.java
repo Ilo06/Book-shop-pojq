@@ -1,9 +1,16 @@
 package com.example.demo.service;
 
 import com.example.demo.dto.response.DashboardResponse;
+import com.example.demo.entity.Sale;
 import com.example.demo.repository.bookshop.BookCopyRepository;
 import com.example.demo.repository.bookshop.SaleRepository;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -17,18 +24,22 @@ public class DashboardService {
 
   public DashboardResponse.TodayRevenue getTodayRevenue() {
     return DashboardResponse.TodayRevenue.builder()
-        .todayRevenue(saleRepository.findTodayRevenue())
+        .todayRevenue(saleRepository.findTodaySale()
+                .stream().map(this::getSaleRevenue)
+                .reduce(BigDecimal.ZERO, BigDecimal::add))
         .build();
   }
 
   public DashboardResponse.MonthlyRevenue getMonthlyRevenue() {
     return DashboardResponse.MonthlyRevenue.builder()
-        .monthlyRevenue(saleRepository.findMonthlyRevenue())
+        .monthlyRevenue(saleRepository.findMonthlySale()
+                .stream().map(this::getSaleRevenue)
+                .reduce(BigDecimal.ZERO, BigDecimal::add))
         .build();
   }
 
   public List<DashboardResponse.StockEntry> getBooksInStock() {
-    return bookCopyRepository.findAvailableCopiesPerBook().stream()
+    return bookCopyRepository.getAllBooksStock().stream()
         .map(
             p ->
                 DashboardResponse.StockEntry.builder()
@@ -64,14 +75,36 @@ public class DashboardService {
   }
 
   public List<DashboardResponse.RevenueByGenreEntry> getRevenueByGenre() {
-    return saleRepository.findRevenueByGenre().stream()
-        .map(
-            p ->
-                DashboardResponse.RevenueByGenreEntry.builder()
-                    .genreId(p.getGenreId())
-                    .genreName(p.getGenreName())
-                    .revenue(p.getTotalRevenue())
-                    .build())
-        .toList();
+    Map<Map<UUID, String>, BigDecimal> genreRevenueMap = new HashMap<>();
+
+    saleRepository.findAllConfirmedSale().stream()
+            .flatMap(s -> s.getBooks().stream()).forEach(saleBookCopy ->
+                    saleBookCopy.getBookCopy().getBook().getGenres().forEach(genre -> {
+                if (genreRevenueMap.containsKey(Map.of(genre.getId(), genre.getName()))) {
+                  genreRevenueMap.computeIfPresent(Map.of(genre.getId(), genre.getName()),
+                      (uuidStringMap, actualValue) ->
+                              actualValue.add(saleBookCopy.getBookCopy().getPrice().multiply(BigDecimal.valueOf(saleBookCopy.getQuantity()))));
+                } else {
+                  genreRevenueMap.put(
+                      Map.of(genre.getId(), genre.getName()),
+                      (saleBookCopy.getBookCopy().getPrice().multiply(BigDecimal.valueOf(saleBookCopy.getQuantity())))
+                  );
+                }
+            }));
+
+    return genreRevenueMap.keySet().stream().flatMap(map ->
+            map.keySet().stream().map(genreId ->
+            DashboardResponse.RevenueByGenreEntry.builder()
+                    .genreId(genreId)
+                    .genreName(map.get(genreId))
+                    .revenue(genreRevenueMap.get(Map.of(genreId, map.get(genreId))))
+                    .build()
+            ))
+            .toList();
+  }
+
+  private BigDecimal getSaleRevenue(Sale sale) {
+    return BigDecimal.valueOf(sale.getBooks().stream()
+            .mapToDouble(saleBookCopy -> saleBookCopy.getQuantity() * Double.parseDouble(saleBookCopy.getBookCopy().getPrice().toString())).sum());
   }
 }
