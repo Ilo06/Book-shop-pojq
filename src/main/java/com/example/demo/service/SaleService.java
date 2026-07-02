@@ -13,7 +13,6 @@ import com.example.demo.repository.bookshop.SaleBookCopyRepository;
 import com.example.demo.repository.bookshop.SaleRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -33,7 +32,9 @@ public class SaleService {
   public List<SaleResponse> findByDateBetween(Instant from, Instant to) {
     if (from == null) from = LocalDateTime.of(1970, 1, 1, 0, 0).toInstant(ZoneOffset.UTC);
     if (to == null) to = Instant.now();
-    return saleRepository.findByCreationDateTimeBetween(from, to).stream().map(this::toResponse).toList();
+    return saleRepository.findByCreationDateTimeBetween(from, to).stream()
+        .map(this::toResponse)
+        .toList();
   }
 
   @Transactional
@@ -97,12 +98,12 @@ public class SaleService {
             .toList();
 
     return SaleResponse.builder()
-            .id(sale.getId())
-            .creationDateTime(sale.getCreationDateTime())
-            .saleStatus(sale.getStatus())
-            .isReservation(sale.getIsReservation())
-            .finalizationDateTime(sale.getFinalizationDateTime())
-            .books(bookResponses)
-            .build();
+        .id(sale.getId())
+        .creationDateTime(sale.getCreationDateTime())
+        .saleStatus(sale.getStatus())
+        .isReservation(sale.getIsReservation())
+        .finalizationDateTime(sale.getFinalizationDateTime())
+        .books(bookResponses)
+        .build();
   }
 }

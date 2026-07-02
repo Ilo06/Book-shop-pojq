@@ -1,7 +1,6 @@
 package com.example.demo.dto.response;
 
 import com.example.demo.entity.enums.BookCopyType;
-
 import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.AllArgsConstructor;

@@ -65,7 +65,7 @@ public class BookCopyController {
   @GetMapping("/{copyId}/stock")
   public ResponseEntity<?> getBookCopyStock(@PathVariable UUID copyId) {
     return ResponseEntity.status(HttpStatus.OK)
-            .header("Content-Type", "application/json")
-            .body(bookCopyService.getStockByCopyId(copyId));
+        .header("Content-Type", "application/json")
+        .body(bookCopyService.getStockByCopyId(copyId));
   }
 }

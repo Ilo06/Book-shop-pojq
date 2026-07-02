@@ -2,7 +2,6 @@ package com.example.demo.repository.bookshop;
 
 import com.example.demo.entity.Sale;
 import com.example.demo.repository.projection.TopSellerProjection;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;

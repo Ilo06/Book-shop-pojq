@@ -9,7 +9,6 @@ import com.example.demo.entity.BookCopyPrice;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.bookshop.BookCopyPriceRepository;
 import com.example.demo.repository.bookshop.BookCopyRepository;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -44,7 +43,13 @@ public class BookCopyService {
             .prices(null)
             .location(input.getLocation())
             .build();
-    bookCopy.setPrices(List.of(BookCopyPrice.builder().bookCopy(bookCopy).date(Instant.now()).price(input.getPrice()).build()));
+    bookCopy.setPrices(
+        List.of(
+            BookCopyPrice.builder()
+                .bookCopy(bookCopy)
+                .date(Instant.now())
+                .price(input.getPrice())
+                .build()));
     return toResponse(bookCopyRepository.save(bookCopy));
   }
 
@@ -53,10 +58,12 @@ public class BookCopyService {
     BookCopy copy = getOrThrow(id);
     List<BookCopyPrice> prices = copy.getPrices();
     if (input.getPrice() != null) {
-      prices.add(BookCopyPrice.builder()
+      prices.add(
+          BookCopyPrice.builder()
               .bookCopy(copy)
               .date(Instant.now())
-              .price(input.getPrice()).build());
+              .price(input.getPrice())
+              .build());
       copy.setPrices(prices);
     }
     if (input.getLocation() != null) {

@@ -97,12 +97,15 @@ public class BookService {
   }
 
   public List<CopyStockResponse> getDetailedStock(UUID bookId) {
-    return bookCopyRepository.getDetailedBookStock(bookId)
-            .stream().map(csp -> CopyStockResponse.builder()
+    return bookCopyRepository.getDetailedBookStock(bookId).stream()
+        .map(
+            csp ->
+                CopyStockResponse.builder()
                     .bookId(bookId)
                     .type(csp.getType())
                     .availableCopies(csp.getAvailableCopies())
-                    .build()).toList();
+                    .build())
+        .toList();
   }
 
   public Book getOrThrow(UUID id) {
@@ -136,8 +139,12 @@ public class BookService {
         .id(book.getId())
         .title(book.getTitle())
         .isbn(book.getIsbn())
-        .genres(book.getGenres()
-          .stream().map(genre -> GenreResponse.builder().id(genre.getId()).name(genre.getName()).build()).toList())
+        .genres(
+            book.getGenres().stream()
+                .map(
+                    genre ->
+                        GenreResponse.builder().id(genre.getId()).name(genre.getName()).build())
+                .toList())
         .build();
   }
 
@@ -148,8 +155,12 @@ public class BookService {
         .isbn(book.getIsbn())
         .description(book.getDescription())
         .publishDate(book.getPublishDate())
-        .genres(book.getGenres()
-          .stream().map(genre -> GenreResponse.builder().id(genre.getId()).name(genre.getName()).build()).toList())
+        .genres(
+            book.getGenres().stream()
+                .map(
+                    genre ->
+                        GenreResponse.builder().id(genre.getId()).name(genre.getName()).build())
+                .toList())
         .authors(
             book.getAuthors() != null
                 ? book.getAuthors().stream()

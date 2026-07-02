@@ -2,9 +2,7 @@ package com.example.demo.endpoint.rest.controller.bookshop;
 
 import com.example.demo.dto.request.CreateSaleDTO;
 import com.example.demo.service.SaleService;
-
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,8 +17,7 @@ public class SaleController {
 
   @GetMapping
   public ResponseEntity<?> getAll(
-      @RequestParam(required = false) Instant from,
-      @RequestParam(required = false) Instant to) {
+      @RequestParam(required = false) Instant from, @RequestParam(required = false) Instant to) {
     return ResponseEntity.status(HttpStatus.OK)
         .header("Content-Type", "application/json")
         .body(saleService.findByDateBetween(from, to));

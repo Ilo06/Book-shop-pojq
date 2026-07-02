@@ -4,8 +4,6 @@ import com.example.demo.entity.keys.SaleBookCopyId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(name = "sale_book_copy")

@@ -49,18 +49,18 @@ public class BookCopy {
   @Transient
   public BigDecimal getPrice() {
     return prices.stream()
-            .max(Comparator.comparing(BookCopyPrice::getDate))
-            .orElse(new BookCopyPrice(null, null ,null , BigDecimal.valueOf(0.0F)))
-            .getPrice();
+        .max(Comparator.comparing(BookCopyPrice::getDate))
+        .orElse(new BookCopyPrice(null, null, null, BigDecimal.valueOf(0.0F)))
+        .getPrice();
   }
 
   @JsonIgnore
   @Transient
   public BigDecimal getPrice(Instant date) {
     return prices.stream()
-            .filter(p -> p.getDate().isBefore(date))
-            .max(Comparator.comparing(BookCopyPrice::getDate))
-            .orElse(new BookCopyPrice(null, null ,null , BigDecimal.valueOf(0.0F)))
-            .getPrice();
+        .filter(p -> p.getDate().isBefore(date))
+        .max(Comparator.comparing(BookCopyPrice::getDate))
+        .orElse(new BookCopyPrice(null, null, null, BigDecimal.valueOf(0.0F)))
+        .getPrice();
   }
 }

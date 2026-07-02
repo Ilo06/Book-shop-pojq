@@ -2,7 +2,6 @@ package com.example.demo.entity;
 
 import com.example.demo.entity.enums.SaleStatus;
 import jakarta.persistence.*;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;

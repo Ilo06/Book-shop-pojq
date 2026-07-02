@@ -13,9 +13,6 @@ import com.example.demo.repository.bookshop.ArrivalBookRepository;
 import com.example.demo.repository.bookshop.ArrivalRepository;
 import com.example.demo.repository.bookshop.BookCopyRepository;
 import jakarta.transaction.Transactional;
-
-import java.time.Instant;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -43,10 +40,7 @@ public class ArrivalService {
 
   @Transactional
   public ArrivalResponse create(CreateArrivalDTO input) {
-    Arrival arrival =
-        Arrival.builder()
-            .arrivalDateTime(input.getArrivalDateTime())
-            .build();
+    Arrival arrival = Arrival.builder().arrivalDateTime(input.getArrivalDateTime()).build();
     Arrival savedArrival = arrivalRepository.save(arrival);
 
     List<ArrivalBook> arrivalBooks =

@@ -38,9 +38,10 @@ public class Book {
   private LocalDate publishDate;
 
   @ManyToMany(fetch = FetchType.LAZY)
-  @JoinTable(name = "book_genres",
-          joinColumns = @JoinColumn(name = "book_id"),
-          inverseJoinColumns = @JoinColumn(name = "genre_id"))
+  @JoinTable(
+      name = "book_genres",
+      joinColumns = @JoinColumn(name = "book_id"),
+      inverseJoinColumns = @JoinColumn(name = "genre_id"))
   @OnDelete(action = OnDeleteAction.SET_NULL)
   private List<Genre> genres;
 
