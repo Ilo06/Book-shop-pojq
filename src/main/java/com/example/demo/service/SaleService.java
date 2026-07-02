@@ -93,7 +93,7 @@ public class SaleService {
                 saleBookCopy ->
                     SaleBookCopyResponse.builder()
                         .bookCopyId(saleBookCopy.getBookCopy().getId())
-                        .price(saleBookCopy.getBookCopy().getPrice())
+                        .price(saleBookCopy.getBookCopy().getPrice(sale.getCreationDateTime()))
                         .build())
             .toList();
 

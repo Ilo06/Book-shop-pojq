@@ -94,7 +94,7 @@ public class DashboardService {
                                     actualValue.add(
                                         saleBookCopy
                                             .getBookCopy()
-                                            .getPrice()
+                                            .getPrice(saleBookCopy.getSale().getCreationDateTime())
                                             .multiply(
                                                 BigDecimal.valueOf(saleBookCopy.getQuantity()))));
                           } else {
@@ -102,7 +102,7 @@ public class DashboardService {
                                 Map.of(genre.getId(), genre.getName()),
                                 (saleBookCopy
                                     .getBookCopy()
-                                    .getPrice()
+                                    .getPrice(saleBookCopy.getSale().getCreationDateTime())
                                     .multiply(BigDecimal.valueOf(saleBookCopy.getQuantity()))));
                           }
                         }));
@@ -127,7 +127,11 @@ public class DashboardService {
             .mapToDouble(
                 saleBookCopy ->
                     saleBookCopy.getQuantity()
-                        * Double.parseDouble(saleBookCopy.getBookCopy().getPrice().toString()))
+                        * Double.parseDouble(
+                            saleBookCopy
+                                .getBookCopy()
+                                .getPrice(sale.getCreationDateTime())
+                                .toString()))
             .sum());
   }
 }
