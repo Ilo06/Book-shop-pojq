@@ -58,9 +58,10 @@ public class BookController {
   }
 
   @GetMapping("/{bookId}/stock")
-  public ResponseEntity<?> findAvailableCopiesPerBook(@PathVariable UUID bookId) {
+  public ResponseEntity<?> findAvailableCopiesPerBook(@PathVariable UUID bookId,
+                                                      @RequestParam(required = false, defaultValue = "false") Boolean detailed) {
     return ResponseEntity.status(HttpStatus.OK)
             .header("Content-Type", "application/json")
-            .body(bookService.getStock(bookId));
+            .body(detailed ? bookService.getDetailedStock(bookId) : bookService.getStock(bookId));
   }
 }

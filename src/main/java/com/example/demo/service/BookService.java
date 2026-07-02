@@ -1,10 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.dto.request.CreateBookDTO;
-import com.example.demo.dto.response.AuthorResponse;
-import com.example.demo.dto.response.BookResponse;
-import com.example.demo.dto.response.BookSummaryResponse;
-import com.example.demo.dto.response.GenreResponse;
+import com.example.demo.dto.response.*;
 import com.example.demo.entity.Author;
 import com.example.demo.entity.Book;
 import com.example.demo.entity.Genre;
@@ -97,6 +94,15 @@ public class BookService {
 
   public Integer getStock(UUID id) {
     return bookCopyRepository.getBookStock(id);
+  }
+
+  public List<CopyStockResponse> getDetailedStock(UUID bookId) {
+    return bookCopyRepository.getDetailedBookStock(bookId)
+            .stream().map(csp -> CopyStockResponse.builder()
+                    .bookId(bookId)
+                    .type(csp.getType())
+                    .availableCopies(csp.getAvailableCopies())
+                    .build()).toList();
   }
 
   public Book getOrThrow(UUID id) {
