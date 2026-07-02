@@ -1,17 +1,20 @@
 package com.example.demo.entity;
 
 import com.example.demo.entity.enums.BookCopyType;
-import com.example.demo.entity.enums.BookStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(name = "book_copy")
@@ -28,21 +31,36 @@ public class BookCopy {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "book_id", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private Book book;
 
   @Enumerated(EnumType.STRING)
-  @Column(nullable = false, columnDefinition = "book_status")
-  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-  private BookStatus status;
-
-  @Enumerated(EnumType.STRING)
   @Column(nullable = false, columnDefinition = "book_copy_type")
-  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   private BookCopyType type;
 
-  @Column(precision = 10, scale = 2, nullable = false)
-  private BigDecimal price;
+  @JsonIgnore
+  @OneToMany(mappedBy = "bookCopy")
+  private List<BookCopyPrice> prices;
 
   @Column(length = 10, nullable = false)
   private String location;
+
+  @JsonIgnore
+  @Transient
+  public BigDecimal getPrice() {
+    return prices.stream()
+            .max(Comparator.comparing(BookCopyPrice::getDate))
+            .orElse(new BookCopyPrice(null, null ,null , BigDecimal.valueOf(0.0F)))
+            .getPrice();
+  }
+
+  @JsonIgnore
+  @Transient
+  public BigDecimal getPrice(Instant date) {
+    return prices.stream()
+            .filter(p -> p.getDate().isBefore(date))
+            .max(Comparator.comparing(BookCopyPrice::getDate))
+            .orElse(new BookCopyPrice(null, null ,null , BigDecimal.valueOf(0.0F)))
+            .getPrice();
+  }
 }
