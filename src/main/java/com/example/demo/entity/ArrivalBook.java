@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(name = "arrival_book")
@@ -19,11 +21,13 @@ public class ArrivalBook {
   @ManyToOne
   @MapsId("arrivalId")
   @JoinColumn(name = "arrival_id")
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private Arrival arrival;
 
   @ManyToOne
   @MapsId("bookCopyId")
   @JoinColumn(name = "book_copy_id")
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private BookCopy book;
 
   @Column(nullable = false)
