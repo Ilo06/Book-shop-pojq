@@ -65,4 +65,18 @@ public class BookController {
         .header("Content-Type", "application/json")
         .body(detailed ? bookService.getDetailedStock(bookId) : bookService.getStock(bookId));
   }
+
+  @GetMapping("/stock")
+  public ResponseEntity<?> getAllBooksStock() {
+    return ResponseEntity.status(HttpStatus.OK)
+            .header("Content-Type", "application/json")
+            .body(bookService.getBooksInStock());
+  }
+
+  @GetMapping("/stock/low-stock")
+  public ResponseEntity<?> findLowStockBooks() {
+    return ResponseEntity.status(HttpStatus.OK)
+            .header("Content-Type", "application/json")
+            .body(bookService.getLowStock());
+  }
 }

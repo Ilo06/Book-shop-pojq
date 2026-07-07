@@ -108,6 +108,30 @@ public class BookService {
         .toList();
   }
 
+  public List<StockResponse> getBooksInStock() {
+    return bookCopyRepository.getAllBooksStock().stream()
+            .map(
+                    p ->
+                            StockResponse.builder()
+                                    .bookId(p.getBookId())
+                                    .title(p.getTitle())
+                                    .availableCopies(p.getAvailableCopies())
+                                    .build())
+            .toList();
+  }
+
+  public List<StockResponse> getLowStock() {
+    return bookCopyRepository.findLowStockBooks().stream()
+            .map(
+                    p ->
+                            StockResponse.builder()
+                                    .bookId(p.getBookId())
+                                    .title(p.getTitle())
+                                    .availableCopies(p.getAvailableCopies())
+                                    .build())
+            .toList();
+  }
+
   public Book getOrThrow(UUID id) {
     return bookRepository
         .findById(id)

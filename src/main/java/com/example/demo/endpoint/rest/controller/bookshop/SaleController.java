@@ -1,9 +1,11 @@
 package com.example.demo.endpoint.rest.controller.bookshop;
 
 import com.example.demo.dto.request.CreateSaleDTO;
+import com.example.demo.dto.response.RevenueResponse;
 import com.example.demo.exception.BadRequestException;
 import com.example.demo.service.SaleService;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.validation.Valid;
@@ -46,5 +48,34 @@ public class SaleController {
     return ResponseEntity.status(HttpStatus.OK)
             .header("Content-Type", "application/json")
             .body(saleService.finalize(saleId, confirm));
+  }
+
+  @GetMapping("/today-revenue")
+  public ResponseEntity<RevenueResponse.TodayRevenue> getTodayRevenue() {
+    return ResponseEntity.status(HttpStatus.OK)
+            .header("Content-Type", "application/json")
+            .body(saleService.getTodayRevenue());
+  }
+
+  @GetMapping("/monthly-revenue")
+  public ResponseEntity<RevenueResponse.MonthlyRevenue> getMonthlyRevenue() {
+    return ResponseEntity.status(HttpStatus.OK)
+            .header("Content-Type", "application/json")
+            .body(saleService.getMonthlyRevenue());
+  }
+
+  @GetMapping("/top-sellers")
+  public ResponseEntity<List<RevenueResponse.TopSellerEntry>> getTopSellers(
+          @RequestParam(defaultValue = "10") int limit) {
+    return ResponseEntity.status(HttpStatus.OK)
+            .header("Content-Type", "application/json")
+            .body(saleService.getTopSellers(limit));
+  }
+
+  @GetMapping("/revenue-by-genre")
+  public ResponseEntity<List<RevenueResponse.RevenueByGenreEntry>> getRevenueByGenre() {
+    return ResponseEntity.status(HttpStatus.OK)
+            .header("Content-Type", "application/json")
+            .body(saleService.getRevenueByGenre());
   }
 }

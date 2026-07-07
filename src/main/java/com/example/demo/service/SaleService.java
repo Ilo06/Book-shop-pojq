@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.dto.request.CreateSaleDTO;
 import com.example.demo.dto.request.QuantifiedBookCopyDTO;
+import com.example.demo.dto.response.RevenueResponse;
 import com.example.demo.dto.response.SaleBookCopyResponse;
 import com.example.demo.dto.response.SaleResponse;
 import com.example.demo.entity.BookCopy;
@@ -15,16 +16,16 @@ import com.example.demo.repository.bookshop.SaleBookCopyRepository;
 import com.example.demo.repository.bookshop.SaleRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -91,6 +92,83 @@ public class SaleService {
     return toResponse(saleRepository.save(sale));
   }
 
+  public RevenueResponse.TodayRevenue getTodayRevenue() {
+    return RevenueResponse.TodayRevenue.builder()
+            .todayRevenue(
+                    saleRepository.findTodaySale().stream()
+                            .map(this::getSaleRevenue)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add))
+            .build();
+  }
+
+  public RevenueResponse.MonthlyRevenue getMonthlyRevenue() {
+    return RevenueResponse.MonthlyRevenue.builder()
+            .monthlyRevenue(
+                    saleRepository.findMonthlySale().stream()
+                            .map(this::getSaleRevenue)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add))
+            .build();
+  }
+
+  public List<RevenueResponse.RevenueByGenreEntry> getRevenueByGenre() {
+    Map<Map<UUID, String>, BigDecimal> genreRevenueMap = new HashMap<>();
+
+    saleRepository.findAllConfirmedSale().stream()
+            .flatMap(s -> s.getBooks().stream())
+            .forEach(
+                    saleBookCopy ->
+                            saleBookCopy
+                                    .getBookCopy()
+                                    .getBook()
+                                    .getGenres()
+                                    .forEach(
+                                            genre -> {
+                                              if (genreRevenueMap.containsKey(Map.of(genre.getId(), genre.getName()))) {
+                                                genreRevenueMap.computeIfPresent(
+                                                        Map.of(genre.getId(), genre.getName()),
+                                                        (uuidStringMap, actualValue) ->
+                                                                actualValue.add(
+                                                                        saleBookCopy
+                                                                                .getBookCopy()
+                                                                                .getPrice(saleBookCopy.getSale().getCreationDateTime())
+                                                                                .multiply(
+                                                                                        BigDecimal.valueOf(saleBookCopy.getQuantity()))));
+                                              } else {
+                                                genreRevenueMap.put(
+                                                        Map.of(genre.getId(), genre.getName()),
+                                                        (saleBookCopy
+                                                                .getBookCopy()
+                                                                .getPrice(saleBookCopy.getSale().getCreationDateTime())
+                                                                .multiply(BigDecimal.valueOf(saleBookCopy.getQuantity()))));
+                                              }
+                                            }));
+
+    return genreRevenueMap.keySet().stream()
+            .flatMap(
+                    map ->
+                            map.keySet().stream()
+                                    .map(
+                                            genreId ->
+                                                    RevenueResponse.RevenueByGenreEntry.builder()
+                                                            .genreId(genreId)
+                                                            .genreName(map.get(genreId))
+                                                            .revenue(genreRevenueMap.get(Map.of(genreId, map.get(genreId))))
+                                                            .build()))
+            .toList();
+  }
+
+  public List<RevenueResponse.TopSellerEntry> getTopSellers(int limit) {
+    return saleRepository.findTopSellers(PageRequest.of(0, limit)).stream()
+            .map(
+                    p ->
+                            RevenueResponse.TopSellerEntry.builder()
+                                    .bookId(p.getBookId())
+                                    .title(p.getTitle())
+                                    .unitsSold(p.getTotalSold())
+                                    .build())
+            .toList();
+  }
+
   private SaleBookCopy createSaleBookCopy(Sale sale, UUID bookCopyId, int quantity) {
     BookCopy bookCopy =
         bookCopyRepository
@@ -105,6 +183,20 @@ public class SaleService {
         .bookCopy(bookCopy)
         .quantity(quantity)
         .build();
+  }
+
+  private BigDecimal getSaleRevenue(Sale sale) {
+    return BigDecimal.valueOf(
+            sale.getBooks().stream()
+                    .mapToDouble(
+                            saleBookCopy ->
+                                    saleBookCopy.getQuantity()
+                                            * Double.parseDouble(
+                                            saleBookCopy
+                                                    .getBookCopy()
+                                                    .getPrice(sale.getCreationDateTime())
+                                                    .toString()))
+                    .sum());
   }
 
   private SaleResponse toResponse(Sale sale) {
