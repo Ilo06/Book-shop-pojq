@@ -7,7 +7,6 @@ import com.example.demo.dto.response.ArrivalResponse;
 import com.example.demo.entity.Arrival;
 import com.example.demo.entity.ArrivalBook;
 import com.example.demo.entity.BookCopy;
-import com.example.demo.entity.keys.ArrivalBookId;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.bookshop.ArrivalBookRepository;
 import com.example.demo.repository.bookshop.ArrivalRepository;
@@ -41,6 +40,14 @@ public class ArrivalService {
   @Transactional
   public ArrivalResponse create(CreateArrivalDTO input) {
     Arrival arrival = Arrival.builder().arrivalDateTime(input.getArrivalDateTime()).build();
+
+    if (bookCopyRepository.findAllById(input.getBooks()
+            .stream()
+            .map(QuantifiedBookCopyDTO::getBookCopyId).toList())
+            .size() != input.getBooks().size()) {
+      throw new ResourceNotFoundException("Some Book copy not found");
+    }
+
     Arrival savedArrival = arrivalRepository.save(arrival);
 
     List<ArrivalBook> arrivalBooks =
@@ -59,8 +66,7 @@ public class ArrivalService {
                     new ResourceNotFoundException(
                         "BookCopy not found with id: " + dto.getBookCopyId()));
 
-    ArrivalBookId id = new ArrivalBookId(arrival.getId(), bookCopy.getId());
-    return new ArrivalBook(id, arrival, bookCopy, dto.getQuantity());
+    return new ArrivalBook(null, arrival,  bookCopy, dto.getQuantity());
   }
 
   private ArrivalResponse toResponse(Arrival arrival) {
@@ -68,7 +74,7 @@ public class ArrivalService {
         arrival.getBooks() == null
             ? List.of()
             : arrival.getBooks().stream()
-                .map(ab -> new ArrivalBookLine(ab.getBook().getId(), ab.getQuantity()))
+                .map(ab -> new ArrivalBookLine(ab.getBookCopy().getId(), ab.getQuantity()))
                 .toList();
 
     return ArrivalResponse.builder()
