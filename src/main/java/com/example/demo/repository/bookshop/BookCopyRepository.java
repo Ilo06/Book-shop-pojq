@@ -20,17 +20,18 @@ public interface BookCopyRepository extends JpaRepository<BookCopy, UUID> {
       """
         SELECT b.id            AS bookId,
                b.title         AS title,
-               (ta.arrival - ts.sold) AS availableCopies
-        FROM BookCopy bc
-        JOIN bc.book b
-        JOIN (SELECT ts_bc.book.id AS ts_book_id, COALESCE(COUNT(sbc.bookCopy.id), 0) AS sold
-                FROM BookCopy as ts_bc
-                JOIN SaleBookCopy AS sbc
-                GROUP BY ts_bc.book.id) ts ON ts.ts_book_id = b.id
-        JOIN (SELECT ta_bc.book.id AS ta_book_id, COALESCE(SUM(ab.quantity), 0) AS arrival
-                FROM BookCopy as ta_bc
-                JOIN ArrivalBook AS ab
-                GROUP BY ta_bc.book.id) ta ON ta.ta_book_id = b.id
+               SUM(COALESCE(ta.arrival, 0) - COALESCE(ts.sold, 0)) AS availableCopies
+        FROM Book b
+        LEFT JOIN (SELECT ts_bc.book.id AS ts_bookId, COALESCE(SUM(sbc.quantity), 0) AS sold
+                FROM SaleBookCopy AS sbc
+                JOIN sbc.bookCopy as ts_bc
+                WHERE CAST(sbc.sale.finalizationDateTime AS timestamp) <= current_timestamp
+                GROUP BY ts_bc.book.id) ts ON ts.ts_bookId = b.id
+        LEFT JOIN (SELECT ta_bc.book.id AS ta_bookId, COALESCE(SUM(ab.quantity), 0) AS arrival
+                FROM ArrivalBook AS ab
+                JOIN ab.bookCopy as ta_bc
+                WHERE CAST(ab.arrival.arrivalDateTime AS timestamp) <= current_timestamp
+                GROUP BY ta_bc.book.id) ta ON ta.ta_bookId = ts.ts_bookId
         GROUP BY b.id, b.title
       """)
   List<StockProjection> getAllBooksStock();
@@ -39,28 +40,30 @@ public interface BookCopyRepository extends JpaRepository<BookCopy, UUID> {
       """
       SELECT (arrival - sold) AS copies
       FROM
-          (SELECT COALESCE(COUNT(sbc.bookCopy.id), 0) AS sold
+          (SELECT COALESCE(SUM(sbc.quantity), 0) AS sold
             FROM SaleBookCopy AS sbc
-            WHERE sbc.bookCopy.book.id = :bookId),
+            WHERE sbc.bookCopy.book.id = :bookId AND CAST(sbc.sale.finalizationDateTime AS timestamp) <= current_timestamp),
           (SELECT COALESCE(SUM(ab.quantity), 0) AS arrival
             FROM ArrivalBook AS ab
-            JOIN BookCopy AS bc ON bc.id = ab.arrivalBookId.bookCopyId
-            WHERE bc.book.id = :bookId)
+            JOIN ab.bookCopy AS bc
+            WHERE bc.book.id = :bookId AND CAST(ab.arrival.arrivalDateTime AS timestamp) <= current_timestamp)
       """)
   Integer getBookStock(@Param("bookId") UUID bookId);
 
   @Query(
       """
-      SELECT ta.ta_type AS type, (ta.arrival - ts.sold) AS availableCopies
-      FROM (SELECT ts_bc.type AS ts_type, COALESCE(COUNT(sbc.bookCopy.id), 0) AS sold
+      SELECT COALESCE(ta.ta_type, ts.ts_type) AS type, SUM(COALESCE(ta.arrival, 0) - COALESCE(ts.sold, 0)) AS availableCopies
+      FROM (SELECT ts_bc.type AS ts_type, COALESCE(SUM(sbc.quantity), 0) AS sold
               FROM SaleBookCopy AS sbc
-              JOIN BookCopy AS ts_bc ON sbc.bookCopy.book.id = ts_bc.book.id
-              WHERE ts_bc.book.id = :bookId) AS ts
-      JOIN (SELECT ta_bc.type AS ta_type, COALESCE(SUM(ab.quantity), 0) AS arrival
+              JOIN sbc.bookCopy AS ts_bc
+              WHERE ts_bc.book.id = :bookId AND CAST(sbc.sale.finalizationDateTime AS timestamp) <= current_timestamp
+              GROUP BY ts_bc.type) AS ts
+      FULL OUTER JOIN (SELECT ta_bc.type AS ta_type, COALESCE(SUM(ab.quantity), 0) AS arrival
               FROM ArrivalBook AS ab
-              JOIN BookCopy AS ta_bc ON ab.book.book.id = ta_bc.book.id
-              WHERE ta_bc.book.id = :bookId) AS ta ON ts.ts_type = ta.ta_type
-      GROUP BY ta.ta_type
+              JOIN ab.bookCopy AS ta_bc
+              WHERE ta_bc.book.id = :bookId AND CAST(ab.arrival.arrivalDateTime AS timestamp) <= current_timestamp
+              GROUP BY ta_bc.type) AS ta ON ts.ts_type = ta.ta_type
+      GROUP BY COALESCE(ta.ta_type, ts.ts_type)
       """)
   List<CopyStockProjection> getDetailedBookStock(@Param("bookId") UUID bookId);
 
@@ -68,13 +71,13 @@ public interface BookCopyRepository extends JpaRepository<BookCopy, UUID> {
       """
       SELECT (arrival - sold)  AS copies
       FROM
-          (SELECT COALESCE(COUNT(sbc.bookCopy.id), 0) AS sold
+          (SELECT COALESCE(SUM(sbc.quantity), 0) AS sold
               FROM SaleBookCopy AS sbc
-              WHERE sbc.bookCopy.book.id = :bookId AND sbc.bookCopy.type = :copyType),
+              WHERE sbc.bookCopy.book.id = :bookId AND sbc.bookCopy.type = :copyType AND CAST(sbc.sale.finalizationDateTime AS timestamp) <= current_timestamp),
           (SELECT COALESCE(SUM(ab.quantity), 0) AS arrival
               FROM ArrivalBook AS ab
-              JOIN BookCopy AS bc
-              WHERE bc.book.id = :bookId AND bc.type = :copyType)
+              JOIN ab.bookCopy AS bc
+              WHERE bc.book.id = :bookId AND bc.type = :copyType AND CAST(ab.arrival.arrivalDateTime AS timestamp) <= current_timestamp)
       """)
   Integer getBookCopyStockByType(
       @Param("bookId") UUID bookId, @Param("copyType") BookCopyType copyType);
@@ -83,12 +86,12 @@ public interface BookCopyRepository extends JpaRepository<BookCopy, UUID> {
       """
       SELECT (arrival - sold) AS copies
       FROM
-          (SELECT COALESCE(COUNT(sbc.bookCopy.id), 0) AS sold
+          (SELECT COALESCE(SUM(sbc.quantity), 0) AS sold
               FROM SaleBookCopy AS sbc
-              WHERE sbc.bookCopy.id = :copyId),
+              WHERE sbc.bookCopy.id = :copyId AND CAST(sbc.sale.finalizationDateTime AS timestamp) <= current_timestamp),
           (SELECT COALESCE(SUM(ab.quantity), 0) AS arrival
               FROM ArrivalBook AS ab
-              WHERE ab.arrivalBookId.bookCopyId = :bookId )
+              WHERE ab.bookCopy.id = :copyId AND CAST(ab.arrival.arrivalDateTime AS timestamp) <= current_timestamp)
       """)
   Integer getBookCopyStockByCopyId(@Param("copyId") UUID copyId);
 
@@ -96,19 +99,22 @@ public interface BookCopyRepository extends JpaRepository<BookCopy, UUID> {
       """
       SELECT b.id            AS bookId,
              b.title         AS title,
-             (ta.arrival - ts.sold) AS availableCopies
-      FROM BookCopy bc
-      JOIN bc.book b
-      JOIN (SELECT ts_bc.book.id AS ts_bookId, COALESCE(COUNT(sbc.bookCopy.id), 0) AS sold
-              FROM BookCopy as ts_bc
-              JOIN SaleBookCopy AS sbc
+             SUM(COALESCE(ta.arrival, 0) - COALESCE(ts.sold, 0)) AS availableCopies
+      FROM Book b
+      LEFT JOIN (SELECT ts_bc.book.id AS ts_bookId, COALESCE(SUM(sbc.quantity), 0) AS sold
+              FROM SaleBookCopy AS sbc
+              JOIN sbc.bookCopy as ts_bc
+              WHERE CAST(sbc.sale.finalizationDateTime AS timestamp) <= current_timestamp
               GROUP BY ts_bc.book.id) ts ON ts.ts_bookId = b.id
-      JOIN (SELECT ta_bc.book.id AS ta_bookId, COALESCE(SUM(ab.quantity), 0) AS arrival
-              FROM BookCopy as ta_bc
-              JOIN ArrivalBook AS ab
+      LEFT JOIN (SELECT ta_bc.book.id AS ta_bookId, COALESCE(SUM(ab.quantity), 0) AS arrival
+              FROM ArrivalBook AS ab
+              JOIN ab.bookCopy as ta_bc
+              WHERE CAST(ab.arrival.arrivalDateTime AS timestamp) <= current_timestamp
               GROUP BY ta_bc.book.id) ta ON ta.ta_bookId = b.id
       GROUP BY b.id, b.title
-      HAVING (ta.arrival - ts.sold) <= 3
+      HAVING SUM(COALESCE(ta.arrival, 0) - COALESCE(ts.sold, 0)) <= 3
       """)
   List<StockProjection> findLowStockBooks();
+
+  List<BookCopy> findAllByBookId(UUID bookId);
 }
