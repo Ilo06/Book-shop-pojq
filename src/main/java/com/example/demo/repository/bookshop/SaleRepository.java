@@ -18,15 +18,19 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
   @Query(
       """
       SELECT s FROM Sale s
-      WHERE s.creationDateTime = CURRENT_DATE AND s.status = 'CONFIRMED'
+      WHERE EXTRACT(YEAR  FROM s.finalizationDateTime) = EXTRACT(YEAR  FROM CURRENT_DATE)
+        AND EXTRACT(MONTH FROM s.finalizationDateTime) = EXTRACT(MONTH FROM CURRENT_DATE)
+        AND EXTRACT(DAY FROM s.finalizationDateTime) = EXTRACT(DAY FROM CURRENT_DATE)
+        AND s.status = 'CONFIRMED'
       """)
   List<Sale> findTodaySale();
 
   @Query(
       """
       SELECT s FROM Sale s
-      WHERE EXTRACT(YEAR  FROM s.creationDateTime) = EXTRACT(YEAR  FROM CURRENT_DATE)
-        AND EXTRACT(MONTH FROM s.creationDateTime) = EXTRACT(MONTH FROM CURRENT_DATE)
+      WHERE EXTRACT(YEAR  FROM s.finalizationDateTime) = EXTRACT(YEAR  FROM CURRENT_DATE)
+        AND EXTRACT(MONTH FROM s.finalizationDateTime) = EXTRACT(MONTH FROM CURRENT_DATE)
+        AND s.status = 'CONFIRMED'
       """)
   List<Sale> findMonthlySale();
 
@@ -42,6 +46,7 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
       WHERE s.status = 'CONFIRMED'
       GROUP BY b.id, b.title
       ORDER BY SUM(sbc.quantity) DESC
+      LIMIT 5
       """)
   List<TopSellerProjection> findTopSellers(Pageable pageable);
 
