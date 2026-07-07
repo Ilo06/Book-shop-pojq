@@ -4,32 +4,6 @@
     "description": "Postman collection for testing the Poja Book Management API.\n\nBase URL: {{base_url}}\n\nDefault data uses UUIDs from init2.sql.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-  "variable": [
-    {
-      "key": "base_url",
-      "value": "http://localhost:8080"
-    },
-    {
-      "key": "bookId",
-      "value": "c3d4e5f6-3333-4000-8000-000000000001"
-    },
-    {
-      "key": "copyId",
-      "value": "d4e5f6a7-4444-4000-8000-000000000001"
-    },
-    {
-      "key": "saleId",
-      "value": "e5f6a7b8-5555-4000-8000-000000000001"
-    },
-    {
-      "key": "authorId",
-      "value": "b2c3d4e5-2222-4000-8000-000000000001"
-    },
-    {
-      "key": "genreId",
-      "value": "a1b2c3d4-1111-4000-8000-000000000001"
-    }
-  ],
   "item": [
     {
       "name": "Genres",
@@ -38,27 +12,15 @@
           "name": "List genres",
           "request": {
             "method": "GET",
-            "header": [],
             "url": {
-              "raw": "{{base_url}}/genres?page=0&size=20",
+              "raw": "{{base_url}}/genres?page=0&size=20&sort=name",
               "host": ["{{base_url}}"],
               "path": ["genres"],
               "query": [
                 { "key": "page", "value": "0" },
-                { "key": "size", "value": "20" }
+                { "key": "size", "value": "20" },
+                { "key": "sort", "value": "name" }
               ]
-            }
-          }
-        },
-        {
-          "name": "Get genre by ID",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/genres/{{genreId}}",
-              "host": ["{{base_url}}"],
-              "path": ["genres", "{{genreId}}"]
             }
           }
         },
@@ -66,31 +28,30 @@
           "name": "Create genre",
           "request": {
             "method": "POST",
-            "header": ["Content-Type: application/json"],
+            "url": { "raw": "{{base_url}}/genres", "host": ["{{base_url}}"], "path": ["genres"] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Mystery\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/genres",
-              "host": ["{{base_url}}"],
-              "path": ["genres"]
+              "raw": "{\n  \"name\": \"Science-Fiction\"\n}",
+              "options": { "raw": { "language": "json" } }
             }
+          }
+        },
+        {
+          "name": "Get genre",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/genres/{{genreId}}", "host": ["{{base_url}}"], "path": ["genres", "{{genreId}}"] }
           }
         },
         {
           "name": "Update genre",
           "request": {
             "method": "PUT",
-            "header": ["Content-Type: application/json"],
+            "url": { "raw": "{{base_url}}/genres/{{genreId}}", "host": ["{{base_url}}"], "path": ["genres", "{{genreId}}"] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Science Fiction\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/genres/{{genreId}}",
-              "host": ["{{base_url}}"],
-              "path": ["genres", "{{genreId}}"]
+              "raw": "{\n  \"name\": \"Science-Fiction\"\n}",
+              "options": { "raw": { "language": "json" } }
             }
           }
         },
@@ -98,12 +59,7 @@
           "name": "Delete genre",
           "request": {
             "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/genres/{{genreId}}",
-              "host": ["{{base_url}}"],
-              "path": ["genres", "{{genreId}}"]
-            }
+            "url": { "raw": "{{base_url}}/genres/{{genreId}}", "host": ["{{base_url}}"], "path": ["genres", "{{genreId}}"] }
           }
         }
       ]
@@ -115,27 +71,15 @@
           "name": "List authors",
           "request": {
             "method": "GET",
-            "header": [],
             "url": {
-              "raw": "{{base_url}}/authors?page=0&size=20",
+              "raw": "{{base_url}}/authors?page=0&size=20&sort=lastName",
               "host": ["{{base_url}}"],
               "path": ["authors"],
               "query": [
                 { "key": "page", "value": "0" },
-                { "key": "size", "value": "20" }
+                { "key": "size", "value": "20" },
+                { "key": "sort", "value": "lastName" }
               ]
-            }
-          }
-        },
-        {
-          "name": "Get author by ID",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/authors/{{authorId}}",
-              "host": ["{{base_url}}"],
-              "path": ["authors", "{{authorId}}"]
             }
           }
         },
@@ -143,31 +87,30 @@
           "name": "Create author",
           "request": {
             "method": "POST",
-            "header": ["Content-Type: application/json"],
+            "url": { "raw": "{{base_url}}/authors", "host": ["{{base_url}}"], "path": ["authors"] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstName\": \"Terry\",\n  \"lastName\": \"Pratchett\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/authors",
-              "host": ["{{base_url}}"],
-              "path": ["authors"]
+              "raw": "{\n  \"firstName\": \"George\",\n  \"lastName\": \"Orwell\"\n}",
+              "options": { "raw": { "language": "json" } }
             }
+          }
+        },
+        {
+          "name": "Get author",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/authors/{{authorId}}", "host": ["{{base_url}}"], "path": ["authors", "{{authorId}}"] }
           }
         },
         {
           "name": "Update author",
           "request": {
             "method": "PUT",
-            "header": ["Content-Type: application/json"],
+            "url": { "raw": "{{base_url}}/authors/{{authorId}}", "host": ["{{base_url}}"], "path": ["authors", "{{authorId}}"] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstName\": \"George\",\n  \"lastName\": \"Orwell\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/authors/{{authorId}}",
-              "host": ["{{base_url}}"],
-              "path": ["authors", "{{authorId}}"]
+              "raw": "{\n  \"firstName\": \"George\",\n  \"lastName\": \"Orwell\"\n}",
+              "options": { "raw": { "language": "json" } }
             }
           }
         },
@@ -175,12 +118,7 @@
           "name": "Delete author",
           "request": {
             "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/authors/{{authorId}}",
-              "host": ["{{base_url}}"],
-              "path": ["authors", "{{authorId}}"]
-            }
+            "url": { "raw": "{{base_url}}/authors/{{authorId}}", "host": ["{{base_url}}"], "path": ["authors", "{{authorId}}"] }
           }
         }
       ]
@@ -192,39 +130,15 @@
           "name": "List books",
           "request": {
             "method": "GET",
-            "header": [],
             "url": {
               "raw": "{{base_url}}/books",
               "host": ["{{base_url}}"],
-              "path": ["books"]
-            }
-          }
-        },
-        {
-          "name": "List books (filtered)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/books?genreId={{genreId}}&search=dune",
-              "host": ["{{base_url}}"],
               "path": ["books"],
               "query": [
-                { "key": "genreId", "value": "{{genreId}}" },
-                { "key": "search", "value": "dune" }
+                { "key": "genreId", "value": "", "disabled": true },
+                { "key": "authorId", "value": "", "disabled": true },
+                { "key": "search", "value": "", "disabled": true }
               ]
-            }
-          }
-        },
-        {
-          "name": "Get book by ID",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/books/{{bookId}}",
-              "host": ["{{base_url}}"],
-              "path": ["books", "{{bookId}}"]
             }
           }
         },
@@ -232,31 +146,30 @@
           "name": "Create book",
           "request": {
             "method": "POST",
-            "header": ["Content-Type: application/json"],
+            "url": { "raw": "{{base_url}}/books", "host": ["{{base_url}}"], "path": ["books"] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Neuromancer\",\n  \"isbn\": \"9780441569598\",\n  \"description\": \"A sci-fi novel about a washed-up computer hacker hired for one last job.\",\n  \"publishDate\": \"1984-07-01\",\n  \"genreId\": \"a1b2c3d4-1111-4000-8000-000000000001\",\n  \"authorIds\": [\"b2c3d4e5-2222-4000-8000-000000000004\"]\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/books",
-              "host": ["{{base_url}}"],
-              "path": ["books"]
+              "raw": "{\n  \"title\": \"1984\",\n  \"isbn\": \"9780451524935\",\n  \"description\": \"Dystopian classic.\",\n  \"publishDate\": \"1949-06-08\",\n  \"genreIds\": [],\n  \"authorIds\": []\n}",
+              "options": { "raw": { "language": "json" } }
             }
+          }
+        },
+        {
+          "name": "Get book",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/books/{{bookId}}", "host": ["{{base_url}}"], "path": ["books", "{{bookId}}"] }
           }
         },
         {
           "name": "Update book",
           "request": {
             "method": "PUT",
-            "header": ["Content-Type: application/json"],
+            "url": { "raw": "{{base_url}}/books/{{bookId}}", "host": ["{{base_url}}"], "path": ["books", "{{bookId}}"] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"1984 (Updated)\",\n  \"isbn\": \"9780451524935\",\n  \"description\": \"A dystopian novel set in a totalitarian society ruled by Big Brother.\",\n  \"publishDate\": \"1949-06-08\",\n  \"genreId\": \"a1b2c3d4-1111-4000-8000-000000000001\",\n  \"authorIds\": [\"b2c3d4e5-2222-4000-8000-000000000001\"]\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/books/{{bookId}}",
-              "host": ["{{base_url}}"],
-              "path": ["books", "{{bookId}}"]
+              "raw": "{\n  \"title\": \"1984\",\n  \"isbn\": \"9780451524935\",\n  \"description\": \"Updated description.\",\n  \"publishDate\": \"1949-06-08\",\n  \"genreIds\": [],\n  \"authorIds\": []\n}",
+              "options": { "raw": { "language": "json" } }
             }
           }
         },
@@ -264,12 +177,35 @@
           "name": "Delete book",
           "request": {
             "method": "DELETE",
-            "header": [],
+            "url": { "raw": "{{base_url}}/books/{{bookId}}", "host": ["{{base_url}}"], "path": ["books", "{{bookId}}"] }
+          }
+        },
+        {
+          "name": "Get book stock",
+          "request": {
+            "method": "GET",
             "url": {
-              "raw": "{{base_url}}/books/{{bookId}}",
+              "raw": "{{base_url}}/books/{{bookId}}/stock",
               "host": ["{{base_url}}"],
-              "path": ["books", "{{bookId}}"]
+              "path": ["books", "{{bookId}}", "stock"],
+              "query": [
+                { "key": "detailed", "value": "false", "disabled": true }
+              ]
             }
+          }
+        },
+        {
+          "name": "Get all books stock",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/books/stock", "host": ["{{base_url}}"], "path": ["books", "stock"] }
+          }
+        },
+        {
+          "name": "Get low stock books",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/books/stock/low-stock", "host": ["{{base_url}}"], "path": ["books", "stock", "low-stock"] }
           }
         }
       ]
@@ -278,73 +214,40 @@
       "name": "Book Copies",
       "item": [
         {
-          "name": "List copies of a book",
+          "name": "List copies",
           "request": {
             "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/books/{{bookId}}/copies",
-              "host": ["{{base_url}}"],
-              "path": ["books", "{{bookId}}", "copies"]
-            }
-          }
-        },
-        {
-          "name": "List copies of a book (filter by status)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/books/{{bookId}}/copies?status=AVAILABLE",
-              "host": ["{{base_url}}"],
-              "path": ["books", "{{bookId}}", "copies"],
-              "query": [
-                { "key": "status", "value": "AVAILABLE" }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Get copy by ID",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/books/{{bookId}}/copies/{{copyId}}",
-              "host": ["{{base_url}}"],
-              "path": ["books", "{{bookId}}", "copies", "{{copyId}}"]
-            }
+            "url": { "raw": "{{base_url}}/books/{{bookId}}/copies", "host": ["{{base_url}}"], "path": ["books", "{{bookId}}", "copies"] }
           }
         },
         {
           "name": "Create copy",
           "request": {
             "method": "POST",
-            "header": ["Content-Type: application/json"],
+            "url": { "raw": "{{base_url}}/books/{{bookId}}/copies", "host": ["{{base_url}}"], "path": ["books", "{{bookId}}", "copies"] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"bookId\": \"c3d4e5f6-3333-4000-8000-000000000001\",\n  \"type\": \"PAPERBACK\",\n  \"price\": 14.99,\n  \"location\": \"Shelf A1\",\n  \"status\": \"AVAILABLE\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/books/{{bookId}}/copies",
-              "host": ["{{base_url}}"],
-              "path": ["books", "{{bookId}}", "copies"]
+              "raw": "{\n  \"type\": \"PAPERBACK\",\n  \"price\": 12.99,\n  \"location\": \"A1-Shelf3\"\n}",
+              "options": { "raw": { "language": "json" } }
             }
+          }
+        },
+        {
+          "name": "Get copy",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/books/{{bookId}}/copies/{{copyId}}", "host": ["{{base_url}}"], "path": ["books", "{{bookId}}", "copies", "{{copyId}}"] }
           }
         },
         {
           "name": "Patch copy",
           "request": {
             "method": "PATCH",
-            "header": ["Content-Type: application/json"],
+            "url": { "raw": "{{base_url}}/books/{{bookId}}/copies/{{copyId}}", "host": ["{{base_url}}"], "path": ["books", "{{bookId}}", "copies", "{{copyId}}"] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": \"SOLD_OUT\",\n  \"price\": 9.99\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/books/{{bookId}}/copies/{{copyId}}",
-              "host": ["{{base_url}}"],
-              "path": ["books", "{{bookId}}", "copies", "{{copyId}}"]
+              "raw": "{\n  \"price\": 14.99,\n  \"location\": \"B2-Shelf1\"\n}",
+              "options": { "raw": { "language": "json" } }
             }
           }
         },
@@ -352,12 +255,45 @@
           "name": "Delete copy",
           "request": {
             "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/books/{{bookId}}/copies/{{copyId}}",
-              "host": ["{{base_url}}"],
-              "path": ["books", "{{bookId}}", "copies", "{{copyId}}"]
+            "url": { "raw": "{{base_url}}/books/{{bookId}}/copies/{{copyId}}", "host": ["{{base_url}}"], "path": ["books", "{{bookId}}", "copies", "{{copyId}}"] }
+          }
+        },
+        {
+          "name": "Get copy stock",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/books/{{bookId}}/copies/{{copyId}}/stock", "host": ["{{base_url}}"], "path": ["books", "{{bookId}}", "copies", "{{copyId}}", "stock"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Arrivals",
+      "item": [
+        {
+          "name": "List arrivals",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/arrivals", "host": ["{{base_url}}"], "path": ["arrivals"] }
+          }
+        },
+        {
+          "name": "Create arrival",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/arrivals", "host": ["{{base_url}}"], "path": ["arrivals"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"arrivalDateTime\": \"2026-07-07T10:00:00Z\",\n  \"books\": [\n    {\n      \"bookCopyId\": \"{{copyId}}\",\n      \"quantity\": 5\n    }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
             }
+          }
+        },
+        {
+          "name": "Get arrival",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/arrivals/{{arrivalId}}", "host": ["{{base_url}}"], "path": ["arrivals", "{{arrivalId}}"] }
           }
         }
       ]
@@ -369,39 +305,14 @@
           "name": "List sales",
           "request": {
             "method": "GET",
-            "header": [],
             "url": {
               "raw": "{{base_url}}/sales",
               "host": ["{{base_url}}"],
-              "path": ["sales"]
-            }
-          }
-        },
-        {
-          "name": "List sales (date range)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/sales?from=2024-01-01&to=2025-12-31",
-              "host": ["{{base_url}}"],
               "path": ["sales"],
               "query": [
-                { "key": "from", "value": "2024-01-01" },
-                { "key": "to", "value": "2025-12-31" }
+                { "key": "from", "value": "2024-01-01T00:00:00Z", "disabled": true },
+                { "key": "to", "value": "2026-12-31T23:59:59Z", "disabled": true }
               ]
-            }
-          }
-        },
-        {
-          "name": "Get sale by ID",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/sales/{{saleId}}",
-              "host": ["{{base_url}}"],
-              "path": ["sales", "{{saleId}}"]
             }
           }
         },
@@ -409,19 +320,135 @@
           "name": "Create sale",
           "request": {
             "method": "POST",
-            "header": ["Content-Type: application/json"],
+            "url": { "raw": "{{base_url}}/sales", "host": ["{{base_url}}"], "path": ["sales"] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"saleDate\": \"2025-06-10\",\n  \"bookCopyIds\": [\n    \"d4e5f6a7-4444-4000-8000-000000000005\",\n    \"d4e5f6a7-4444-4000-8000-000000000016\"\n  ]\n}"
-            },
+              "raw": "{\n  \"creationDateTime\": \"2026-07-07T12:00:00Z\",\n  \"isReservation\": false,\n  \"quantifiedBookCopyList\": [\n    {\n      \"bookCopyId\": \"{{copyId}}\",\n      \"quantity\": 1\n    }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Get sale",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/sales/{{saleId}}", "host": ["{{base_url}}"], "path": ["sales", "{{saleId}}"] }
+          }
+        },
+        {
+          "name": "Finalize sale",
+          "request": {
+            "method": "POST",
             "url": {
-              "raw": "{{base_url}}/sales",
+              "raw": "{{base_url}}/sales/{{saleId}}/finalize?confirm=true",
               "host": ["{{base_url}}"],
-              "path": ["sales"]
+              "path": ["sales", "{{saleId}}", "finalize"],
+              "query": [{ "key": "confirm", "value": "true" }]
+            }
+          }
+        },
+        {
+          "name": "Today revenue",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/sales/today-revenue", "host": ["{{base_url}}"], "path": ["sales", "today-revenue"] }
+          }
+        },
+        {
+          "name": "Monthly revenue",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/sales/monthly-revenue", "host": ["{{base_url}}"], "path": ["sales", "monthly-revenue"] }
+          }
+        },
+        {
+          "name": "Top sellers",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/sales/top-sellers?limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["sales", "top-sellers"],
+              "query": [{ "key": "limit", "value": "10" }]
+            }
+          }
+        },
+        {
+          "name": "Revenue by genre",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/sales/revenue-by-genre", "host": ["{{base_url}}"], "path": ["sales", "revenue-by-genre"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Ping",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/ping", "host": ["{{base_url}}"], "path": ["ping"] }
+          }
+        },
+        {
+          "name": "Health DB",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/health/db", "host": ["{{base_url}}"], "path": ["health", "db"] }
+          }
+        },
+        {
+          "name": "Health email",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/health/email?to=test@example.com",
+              "host": ["{{base_url}}"],
+              "path": ["health", "email"],
+              "query": [{ "key": "to", "value": "test@example.com" }]
             }
           }
         }
       ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "genreId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "authorId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "bookId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "copyId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "arrivalId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "saleId",
+      "value": "",
+      "type": "string"
     }
   ]
 }

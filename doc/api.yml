@@ -2,13 +2,14 @@ openapi: 3.1.0
 
 info:
   title: Book Management API
-  version: 1.0.0
+  version: 2.0.0
   description: >
-    API REST pour la gestion d'une librairie : œuvres bibliographiques, exemplaires
-    physiques, arrivages, ventes, réservations et tableau de bord.
+    API REST pour la gestion d'une librairie :
+    œuvres (books), exemplaires (copies), arrivages (arrivals),
+    ventes/réservations (sales) et indicateurs.
 
 servers:
-  - url: http://localhost:8080/api/v1
+  - url: http://localhost:8080
     description: Développement local
 
 tags:
@@ -23,33 +24,35 @@ tags:
   - name: arrivals
     description: Réceptions de stock
   - name: sales
-    description: Ventes
-  - name: reservations
-    description: Réservations
-  - name: dashboard
-    description: Métriques et indicateurs
+    description: Ventes, réservations et indicateurs financiers
+  - name: health
+    description: Points de监控 santé
 
-# ══════════════════════════════════════════════════════════════
-#  PATHS
-# ══════════════════════════════════════════════════════════════
 paths:
 
-  # ── Genres ─────────────────────────────────────────────────
-
+  # Genres
   /genres:
     get:
       tags: [genres]
-      summary: Liste tous les genres
+      summary: Liste paginée des genres
       operationId: listGenres
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 0 }
+        - name: size
+          in: query
+          schema: { type: integer, default: 20 }
+        - name: sort
+          in: query
+          schema: { type: string, default: name }
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Genre'
+                $ref: '#/components/schemas/PageResponseGenre'
     post:
       tags: [genres]
       summary: Crée un genre
@@ -59,7 +62,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GenreInput'
+              $ref: '#/components/schemas/CreateGenreDTO'
       responses:
         '201':
           description: Créé
@@ -67,6 +70,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Genre'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '409':
           $ref: '#/components/responses/Conflict'
 
@@ -95,7 +100,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GenreInput'
+              $ref: '#/components/schemas/CreateGenreDTO'
       responses:
         '200':
           description: OK
@@ -103,8 +108,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Genre'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
     delete:
       tags: [genres]
       summary: Supprime un genre
@@ -117,22 +126,29 @@ paths:
         '409':
           $ref: '#/components/responses/Conflict'
 
-  # ── Authors ─────────────────────────────────────────────────
-
+  # Authors
   /authors:
     get:
       tags: [authors]
-      summary: Liste tous les auteurs
+      summary: Liste paginée des auteurs
       operationId: listAuthors
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 0 }
+        - name: size
+          in: query
+          schema: { type: integer, default: 20 }
+        - name: sort
+          in: query
+          schema: { type: string, default: lastName }
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Author'
+                $ref: '#/components/schemas/PageResponseAuthor'
     post:
       tags: [authors]
       summary: Crée un auteur
@@ -142,7 +158,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AuthorInput'
+              $ref: '#/components/schemas/CreateAuthorDTO'
       responses:
         '201':
           description: Créé
@@ -150,6 +166,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Author'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
 
   /authors/{authorId}:
     parameters:
@@ -176,7 +196,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AuthorInput'
+              $ref: '#/components/schemas/CreateAuthorDTO'
       responses:
         '200':
           description: OK
@@ -184,8 +204,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Author'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
     delete:
       tags: [authors]
       summary: Supprime un auteur
@@ -196,29 +220,23 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  # ── Books ───────────────────────────────────────────────────
-
+  # Books
   /books:
     get:
       tags: [books]
-      summary: Liste tous les livres
+      summary: Liste des livres (avec filtres optionnels)
       operationId: listBooks
       parameters:
         - name: genreId
           in: query
-          schema:
-            type: string
-            format: uuid
+          schema: { type: string, format: uuid }
         - name: authorId
           in: query
-          schema:
-            type: string
-            format: uuid
+          schema: { type: string, format: uuid }
         - name: search
           in: query
-          description: Recherche plein-texte sur titre / ISBN
-          schema:
-            type: string
+          description: Recherche plein-texte sur titre ou ISBN
+          schema: { type: string }
       responses:
         '200':
           description: OK
@@ -237,7 +255,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BookInput'
+              $ref: '#/components/schemas/CreateBookDTO'
       responses:
         '201':
           description: Créé
@@ -245,6 +263,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Book'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '409':
           $ref: '#/components/responses/Conflict'
 
@@ -273,7 +293,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BookInput'
+              $ref: '#/components/schemas/CreateBookDTO'
       responses:
         '200':
           description: OK
@@ -281,8 +301,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Book'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
     delete:
       tags: [books]
       summary: Supprime un livre
@@ -293,13 +317,68 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /books/{bookId}/copies:
+  /books/{bookId}/stock:
     parameters:
       - $ref: '#/components/parameters/bookId'
     get:
       tags: [books]
+      summary: Stock d'un livre (simple ou détaillé par type)
+      operationId: getBookStock
+      parameters:
+        - name: detailed
+          in: query
+          schema: { type: boolean, default: false }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: integer
+                    description: Nombre total d'exemplaires disponibles
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/CopyStockEntry'
+
+  /books/stock:
+    get:
+      tags: [books]
+      summary: Stock de tous les livres
+      operationId: getAllBooksStock
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StockEntry'
+
+  /books/stock/low-stock:
+    get:
+      tags: [books]
+      summary: Livres avec stock ≤ 3
+      operationId: getLowStockBooks
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StockEntry'
+
+  # Book Copies (sous /books/{bookId}/copies)
+  /books/{bookId}/copies:
+    parameters:
+      - $ref: '#/components/parameters/bookId'
+    get:
+      tags: [book-copies]
       summary: Exemplaires d'un livre
-      operationId: listBookCopiesByBook
+      operationId: listBookCopies
       responses:
         '200':
           description: OK
@@ -311,28 +390,6 @@ paths:
                   $ref: '#/components/schemas/BookCopy'
         '404':
           $ref: '#/components/responses/NotFound'
-
-  # ── BookCopies ──────────────────────────────────────────────
-
-  /book-copies:
-    get:
-      tags: [book-copies]
-      summary: Liste tous les exemplaires
-      operationId: listBookCopies
-      parameters:
-        - name: status
-          in: query
-          schema:
-            $ref: '#/components/schemas/BookCopyStatus'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/BookCopy'
     post:
       tags: [book-copies]
       summary: Crée un exemplaire
@@ -342,7 +399,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BookCopyInput'
+              $ref: '#/components/schemas/CreateBookCopyDTO'
       responses:
         '201':
           description: Créé
@@ -350,9 +407,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BookCopy'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
 
-  /book-copies/{copyId}:
+  /books/{bookId}/copies/{copyId}:
     parameters:
+      - $ref: '#/components/parameters/bookId'
       - $ref: '#/components/parameters/copyId'
     get:
       tags: [book-copies]
@@ -369,14 +433,14 @@ paths:
           $ref: '#/components/responses/NotFound'
     patch:
       tags: [book-copies]
-      summary: Met à jour le statut / l'emplacement d'un exemplaire
+      summary: Met à jour prix et/ou emplacement
       operationId: patchBookCopy
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BookCopyPatch'
+              $ref: '#/components/schemas/PatchBookCopyDTO'
       responses:
         '200':
           description: OK
@@ -384,6 +448,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BookCopy'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
     delete:
@@ -391,13 +457,28 @@ paths:
       summary: Supprime un exemplaire
       operationId: deleteBookCopy
       responses:
-        '204':
+        '201':
           description: Supprimé
         '404':
           $ref: '#/components/responses/NotFound'
 
-  # ── Arrivals ────────────────────────────────────────────────
+  /books/{bookId}/copies/{copyId}/stock:
+    parameters:
+      - $ref: '#/components/parameters/bookId'
+      - $ref: '#/components/parameters/copyId'
+    get:
+      tags: [book-copies]
+      summary: Stock disponible d'un exemplaire spécifique
+      operationId: getBookCopyStock
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: integer
 
+  # Arrivals
   /arrivals:
     get:
       tags: [arrivals]
@@ -421,7 +502,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ArrivalInput'
+              $ref: '#/components/schemas/CreateArrivalDTO'
       responses:
         '201':
           description: Créé
@@ -429,6 +510,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Arrival'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /arrivals/{arrivalId}:
     parameters:
@@ -447,24 +532,21 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  # ── Sales ───────────────────────────────────────────────────
-
+  # Sales
   /sales:
     get:
       tags: [sales]
-      summary: Liste toutes les ventes
+      summary: Liste des ventes (filtre par plage de dates)
       operationId: listSales
       parameters:
         - name: from
           in: query
-          schema:
-            type: string
-            format: date
+          description: Date début (ISO 8601 avec timezone, ex. 2024-01-01T00:00:00Z)
+          schema: { type: string, format: date-time }
         - name: to
           in: query
-          schema:
-            type: string
-            format: date
+          description: Date fin (ISO 8601 avec timezone)
+          schema: { type: string, format: date-time }
       responses:
         '200':
           description: OK
@@ -476,14 +558,14 @@ paths:
                   $ref: '#/components/schemas/Sale'
     post:
       tags: [sales]
-      summary: Enregistre une vente
+      summary: Enregistre une vente / réservation
       operationId: createSale
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SaleInput'
+              $ref: '#/components/schemas/CreateSaleDTO'
       responses:
         '201':
           description: Créé
@@ -491,8 +573,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Sale'
-        '422':
-          $ref: '#/components/responses/UnprocessableEntity'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
   /sales/{saleId}:
     parameters:
@@ -511,100 +593,32 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  # ── Reservations ────────────────────────────────────────────
-
-  /reservations:
-    get:
-      tags: [reservations]
-      summary: Liste toutes les réservations
-      operationId: listReservations
-      parameters:
-        - name: status
-          in: query
-          schema:
-            $ref: '#/components/schemas/ReservationStatus'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Reservation'
-    post:
-      tags: [reservations]
-      summary: Crée une réservation
-      operationId: createReservation
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ReservationInput'
-      responses:
-        '201':
-          description: Créé
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Reservation'
-
-  /reservations/{reservationId}:
+  /sales/{saleId}/finalize:
     parameters:
-      - $ref: '#/components/parameters/reservationId'
-    get:
-      tags: [reservations]
-      summary: Détail d'une réservation
-      operationId: getReservation
+      - $ref: '#/components/parameters/saleId'
+    post:
+      tags: [sales]
+      summary: Finalise (confirme ou rejette) une vente
+      operationId: finalizeSale
+      parameters:
+        - name: confirm
+          in: query
+          required: true
+          schema: { type: boolean }
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Reservation'
-        '404':
-          $ref: '#/components/responses/NotFound'
-    patch:
-      tags: [reservations]
-      summary: Change le statut d'une réservation
-      operationId: patchReservation
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [status]
-              properties:
-                status:
-                  $ref: '#/components/schemas/ReservationStatus'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Reservation'
-        '404':
-          $ref: '#/components/responses/NotFound'
-    delete:
-      tags: [reservations]
-      summary: Annule / supprime une réservation
-      operationId: deleteReservation
-      responses:
-        '204':
-          description: Supprimé
+                $ref: '#/components/schemas/Sale'
         '404':
           $ref: '#/components/responses/NotFound'
 
-  # ── Dashboard ───────────────────────────────────────────────
-
-  /dashboard/today-revenue:
+  /sales/today-revenue:
     get:
-      tags: [dashboard]
-      summary: Chiffre d'affaires du jour
+      tags: [sales]
+      summary: Chiffre d'affaires du jour (ventes confirmées)
       operationId: getTodayRevenue
       responses:
         '200':
@@ -612,16 +626,11 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  todayRevenue:
-                    type: number
-                    format: double
-                    example: 1250.00
+                $ref: '#/components/schemas/TodayRevenue'
 
-  /dashboard/monthly-revenue:
+  /sales/monthly-revenue:
     get:
-      tags: [dashboard]
+      tags: [sales]
       summary: Chiffre d'affaires du mois en cours
       operationId: getMonthlyRevenue
       responses:
@@ -630,54 +639,17 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  monthlyRevenue:
-                    type: number
-                    format: double
-                    example: 34200.00
+                $ref: '#/components/schemas/MonthlyRevenue'
 
-  /dashboard/books-in-stock:
+  /sales/top-sellers:
     get:
-      tags: [dashboard]
-      summary: Nombre d'exemplaires disponibles par livre
-      operationId: getBooksInStock
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/StockEntry'
-
-  /dashboard/low-stock:
-    get:
-      tags: [dashboard]
-      summary: Livres avec moins de 3 exemplaires disponibles
-      operationId: getLowStock
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/StockEntry'
-
-  /dashboard/top-sellers:
-    get:
-      tags: [dashboard]
+      tags: [sales]
       summary: Livres les plus vendus
       operationId: getTopSellers
       parameters:
         - name: limit
           in: query
-          schema:
-            type: integer
-            default: 10
+          schema: { type: integer, default: 10 }
       responses:
         '200':
           description: OK
@@ -688,9 +660,9 @@ paths:
                 items:
                   $ref: '#/components/schemas/TopSellerEntry'
 
-  /dashboard/revenue-by-genre:
+  /sales/revenue-by-genre:
     get:
-      tags: [dashboard]
+      tags: [sales]
       summary: Chiffre d'affaires ventilé par genre
       operationId: getRevenueByGenre
       responses:
@@ -703,12 +675,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/RevenueByGenreEntry'
 
-# ══════════════════════════════════════════════════════════════
-#  COMPONENTS
-# ══════════════════════════════════════════════════════════════
 components:
 
-  # ── Parameters ─────────────────────────────────────────────
   parameters:
     genreId:
       name: genreId
@@ -752,16 +720,14 @@ components:
       schema:
         type: string
         format: uuid
-    reservationId:
-      name: reservationId
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
 
-  # ── Responses ───────────────────────────────────────────────
   responses:
+    BadRequest:
+      description: Requête invalide
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     NotFound:
       description: Ressource introuvable
       content:
@@ -769,29 +735,22 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
     Conflict:
-      description: Conflit (ex. ISBN déjà existant)
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    UnprocessableEntity:
-      description: Données métier invalides (ex. exemplaire déjà vendu)
+      description: Conflit (ressource déjà existante)
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
 
-  # ── Schemas ─────────────────────────────────────────────────
   schemas:
 
     # Enums
-    BookCopyStatus:
+    BookCopyType:
       type: string
-      enum: [AVAILABLE, SOLD, RESERVED]
+      enum: [HARDBACK, PAPERBACK, POCKET]
 
-    ReservationStatus:
+    SaleStatus:
       type: string
-      enum: [PENDING, CONFIRMED, CANCELLED]
+      enum: [PENDING, CONFIRMED, REJECTED]
 
     # Genre
     Genre:
@@ -802,9 +761,8 @@ components:
           format: uuid
         name:
           type: string
-          example: Science-fiction
 
-    GenreInput:
+    CreateGenreDTO:
       type: object
       required: [name]
       properties:
@@ -812,6 +770,24 @@ components:
           type: string
           minLength: 1
           maxLength: 100
+
+    PageResponseGenre:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Genre'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+        last:
+          type: boolean
 
     # Author
     Author:
@@ -822,12 +798,10 @@ components:
           format: uuid
         firstName:
           type: string
-          example: Victor
         lastName:
           type: string
-          example: Hugo
 
-    AuthorInput:
+    CreateAuthorDTO:
       type: object
       required: [firstName, lastName]
       properties:
@@ -840,6 +814,24 @@ components:
           minLength: 1
           maxLength: 100
 
+    PageResponseAuthor:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Author'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+        last:
+          type: boolean
+
     # Book
     BookSummary:
       type: object
@@ -851,30 +843,38 @@ components:
           type: string
         isbn:
           type: string
-        price:
-          type: number
-          format: double
-        genre:
-          $ref: '#/components/schemas/Genre'
+        genres:
+          type: array
+          items:
+            $ref: '#/components/schemas/Genre'
 
     Book:
-      allOf:
-        - $ref: '#/components/schemas/BookSummary'
-        - type: object
-          properties:
-            description:
-              type: string
-            publishDate:
-              type: string
-              format: date
-            authors:
-              type: array
-              items:
-                $ref: '#/components/schemas/Author'
-
-    BookInput:
       type: object
-      required: [title, isbn, genreId]
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        isbn:
+          type: string
+        description:
+          type: string
+        publishDate:
+          type: string
+          format: date
+        genres:
+          type: array
+          items:
+            $ref: '#/components/schemas/Genre'
+        authors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Author'
+
+    CreateBookDTO:
+      type: object
+      required: [title, isbn, publishDate, genreIds, authorIds]
       properties:
         title:
           type: string
@@ -883,24 +883,24 @@ components:
         isbn:
           type: string
           pattern: '^(97[89])?[0-9]{9}[0-9X]$'
-          example: '9782070360024'
+          example: '9780451524935'
         description:
           type: string
-        price:
-          type: number
-          format: double
-          minimum: 0
         publishDate:
           type: string
           format: date
-        genreId:
-          type: string
-          format: uuid
+        genreIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          minItems: 1
         authorIds:
           type: array
           items:
             type: string
             format: uuid
+          minItems: 1
 
     # BookCopy
     BookCopy:
@@ -912,155 +912,51 @@ components:
         bookId:
           type: string
           format: uuid
-        status:
-          $ref: '#/components/schemas/BookCopyStatus'
-        location:
-          type: string
-          example: 'Rayon A - Étagère 3'
-
-    BookCopyInput:
-      type: object
-      required: [bookId]
-      properties:
-        bookId:
-          type: string
-          format: uuid
-        location:
-          type: string
-          maxLength: 100
-
-    BookCopyPatch:
-      type: object
-      properties:
-        status:
-          $ref: '#/components/schemas/BookCopyStatus'
-        location:
-          type: string
-          maxLength: 100
-
-    # Arrival
-    ArrivalBookLine:
-      type: object
-      required: [bookId, quantity]
-      properties:
-        bookId:
-          type: string
-          format: uuid
-        quantity:
-          type: integer
-          minimum: 1
-
-    Arrival:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        arrivalDate:
-          type: string
-          format: date
-        books:
-          type: array
-          items:
-            $ref: '#/components/schemas/ArrivalBookLine'
-
-    ArrivalInput:
-      type: object
-      required: [books]
-      properties:
-        arrivalDate:
-          type: string
-          format: date
-        books:
-          type: array
-          minItems: 1
-          items:
-            $ref: '#/components/schemas/ArrivalBookLine'
-
-    # Sale
-    Sale:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        saleDate:
-          type: string
-          format: date
-        saleItems:
-          type: array
-          $ref: "#/components/schemas/SaleItem"
-
-    SaleItem:
-      type: object
-      properties:
-        saleId:
-          type: string
-          format: uuid
-        bookCopyId:
-          type: string
-          format: uuid
-        quantity:
-          type: number
-          format: integer
-        unitPrice:
+        type:
+          $ref: '#/components/schemas/BookCopyType'
+        price:
           type: number
           format: double
+        location:
+          type: string
 
-    SaleInput:
+    CreateBookCopyDTO:
       type: object
-      required: [saleItems]
+      required: [type, price, location]
       properties:
-        saleDate:
+        type:
+          $ref: '#/components/schemas/BookCopyType'
+        price:
+          type: number
+          format: double
+          minimum: 0
+        location:
           type: string
-          format: date
-        saleItems:
-          type: array
-          minItems: 1
-          $ref: "#/components/schemas/SaleItem"
+          maxLength: 100
 
-    # Reservation
-    Reservation:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        reservationDate:
-          type: string
-          format: date
-        status:
-          $ref: '#/components/schemas/ReservationStatus'
-        reservationItems:
-          type: array
-          $ref: "#/components/schemas/ReservationItem"
-
-    ReservationItem:
+    PatchBookCopyDTO:
       type: object
       properties:
-        reservationId:
+        price:
+          type: number
+          format: double
+          minimum: 0
+        location:
           type: string
-          format: uuid
+          maxLength: 100
+
+    CopyStockEntry:
+      type: object
+      properties:
         bookId:
           type: string
           format: uuid
-        quantity:
-          type: number
-          format: integer
+        type:
+          $ref: '#/components/schemas/BookCopyType'
+        availableCopies:
+          type: integer
 
-    ReservationInput:
-      type: object
-      required: [reservationItems]
-      properties:
-        reservationDate:
-          type: string
-          format: date
-        reservationItems:
-          type: array
-          minItems: 1
-          $ref: "#/components/schemas/ReservationItem"
-
-    # Dashboard
+    # Stock
     StockEntry:
       type: object
       properties:
@@ -1071,6 +967,117 @@ components:
           type: string
         availableCopies:
           type: integer
+
+    # Arrival
+    ArrivalBookLine:
+      type: object
+      properties:
+        bookCopyId:
+          type: string
+          format: uuid
+        quantity:
+          type: integer
+
+    Arrival:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        arrivalDateTime:
+          type: string
+          format: date-time
+        books:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArrivalBookLine'
+
+    QuantifiedBookCopyDTO:
+      type: object
+      required: [bookCopyId, quantity]
+      properties:
+        bookCopyId:
+          type: string
+          format: uuid
+        quantity:
+          type: integer
+          minimum: 1
+
+    CreateArrivalDTO:
+      type: object
+      required: [arrivalDateTime, books]
+      properties:
+        arrivalDateTime:
+          type: string
+          format: date-time
+        books:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/QuantifiedBookCopyDTO'
+
+    # Sale
+    SaleBookCopyResponse:
+      type: object
+      properties:
+        bookCopyId:
+          type: string
+          format: uuid
+        price:
+          type: number
+          format: double
+
+    Sale:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        creationDateTime:
+          type: string
+          format: date-time
+        saleStatus:
+          $ref: '#/components/schemas/SaleStatus'
+        finalizationDateTime:
+          type: string
+          format: date-time
+          nullable: true
+        isReservation:
+          type: boolean
+        books:
+          type: array
+          items:
+            $ref: '#/components/schemas/SaleBookCopyResponse'
+
+    CreateSaleDTO:
+      type: object
+      required: [creationDateTime, quantifiedBookCopyList, isReservation]
+      properties:
+        creationDateTime:
+          type: string
+          format: date-time
+        quantifiedBookCopyList:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/QuantifiedBookCopyDTO'
+        isReservation:
+          type: boolean
+
+    # Dashboard / Revenue
+    TodayRevenue:
+      type: object
+      properties:
+        todayRevenue:
+          type: number
+          format: double
+
+    MonthlyRevenue:
+      type: object
+      properties:
+        monthlyRevenue:
+          type: number
+          format: double
 
     TopSellerEntry:
       type: object
@@ -1101,13 +1108,10 @@ components:
       properties:
         status:
           type: integer
-          example: 404
         error:
           type: string
-          example: Not Found
         message:
           type: string
-          example: "Book with id '...' not found"
         timestamp:
           type: string
           format: date-time
