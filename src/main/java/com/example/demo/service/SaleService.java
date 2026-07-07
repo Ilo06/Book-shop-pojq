@@ -16,14 +16,12 @@ import com.example.demo.repository.bookshop.SaleBookCopyRepository;
 import com.example.demo.repository.bookshop.SaleRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -45,24 +43,31 @@ public class SaleService {
 
   @Transactional
   public SaleResponse save(@Valid CreateSaleDTO sale) throws BadRequestException {
-    Map<UUID, QuantifiedBookCopyDTO> qdcMap = sale.getQuantifiedBookCopyList()
-        .stream()
-        .collect(Collectors.toMap(QuantifiedBookCopyDTO::getBookCopyId,
-                qbc -> qbc,
-                (qbc, qbc2) -> new QuantifiedBookCopyDTO(qbc.getBookCopyId(),
-                        qbc.getQuantity() + qbc2.getQuantity())));
+    Map<UUID, QuantifiedBookCopyDTO> qdcMap =
+        sale.getQuantifiedBookCopyList().stream()
+            .collect(
+                Collectors.toMap(
+                    QuantifiedBookCopyDTO::getBookCopyId,
+                    qbc -> qbc,
+                    (qbc, qbc2) ->
+                        new QuantifiedBookCopyDTO(
+                            qbc.getBookCopyId(), qbc.getQuantity() + qbc2.getQuantity())));
 
     for (UUID qbcId : qdcMap.keySet()) {
-        if (bookCopyRepository.findById(qbcId).isEmpty()) {
-          throw new ResourceNotFoundException(
-                  "Book copy with id: " + qbcId + " not found");
-        }
-        if ((bookCopyRepository.getBookCopyStockByCopyId(qbcId) - qdcMap.get(qbcId).getQuantity()) < 0) {
-          throw new BadRequestException("Requested amount exceed remaining stock");
-        }
+      if (bookCopyRepository.findById(qbcId).isEmpty()) {
+        throw new ResourceNotFoundException("Book copy with id: " + qbcId + " not found");
+      }
+      if ((bookCopyRepository.getBookCopyStockByCopyId(qbcId) - qdcMap.get(qbcId).getQuantity())
+          < 0) {
+        throw new BadRequestException("Requested amount exceed remaining stock");
+      }
     }
 
-    Sale saleToSave = Sale.builder().isReservation(sale.getIsReservation()).creationDateTime(sale.getCreationDateTime()).build();
+    Sale saleToSave =
+        Sale.builder()
+            .isReservation(sale.getIsReservation())
+            .creationDateTime(sale.getCreationDateTime())
+            .build();
     Sale newSale = saleRepository.save(saleToSave);
 
     List<SaleBookCopy> saleItems =
@@ -85,7 +90,9 @@ public class SaleService {
   }
 
   public SaleResponse finalize(UUID id, boolean confirm) {
-    Sale sale = saleRepository.findById(id)
+    Sale sale =
+        saleRepository
+            .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Sale with id " + id + " not found"));
     sale.setFinalizationDateTime(Instant.now());
     sale.setStatus(confirm ? SaleStatus.CONFIRMED : SaleStatus.REJECTED);
@@ -94,79 +101,79 @@ public class SaleService {
 
   public RevenueResponse.TodayRevenue getTodayRevenue() {
     return RevenueResponse.TodayRevenue.builder()
-            .todayRevenue(
-                    saleRepository.findTodaySale().stream()
-                            .map(this::getSaleRevenue)
-                            .reduce(BigDecimal.ZERO, BigDecimal::add))
-            .build();
+        .todayRevenue(
+            saleRepository.findTodaySale().stream()
+                .map(this::getSaleRevenue)
+                .reduce(BigDecimal.ZERO, BigDecimal::add))
+        .build();
   }
 
   public RevenueResponse.MonthlyRevenue getMonthlyRevenue() {
     return RevenueResponse.MonthlyRevenue.builder()
-            .monthlyRevenue(
-                    saleRepository.findMonthlySale().stream()
-                            .map(this::getSaleRevenue)
-                            .reduce(BigDecimal.ZERO, BigDecimal::add))
-            .build();
+        .monthlyRevenue(
+            saleRepository.findMonthlySale().stream()
+                .map(this::getSaleRevenue)
+                .reduce(BigDecimal.ZERO, BigDecimal::add))
+        .build();
   }
 
   public List<RevenueResponse.RevenueByGenreEntry> getRevenueByGenre() {
     Map<Map<UUID, String>, BigDecimal> genreRevenueMap = new HashMap<>();
 
     saleRepository.findAllConfirmedSale().stream()
-            .flatMap(s -> s.getBooks().stream())
-            .forEach(
-                    saleBookCopy ->
-                            saleBookCopy
+        .flatMap(s -> s.getBooks().stream())
+        .forEach(
+            saleBookCopy ->
+                saleBookCopy
+                    .getBookCopy()
+                    .getBook()
+                    .getGenres()
+                    .forEach(
+                        genre -> {
+                          if (genreRevenueMap.containsKey(Map.of(genre.getId(), genre.getName()))) {
+                            genreRevenueMap.computeIfPresent(
+                                Map.of(genre.getId(), genre.getName()),
+                                (uuidStringMap, actualValue) ->
+                                    actualValue.add(
+                                        saleBookCopy
+                                            .getBookCopy()
+                                            .getPrice(saleBookCopy.getSale().getCreationDateTime())
+                                            .multiply(
+                                                BigDecimal.valueOf(saleBookCopy.getQuantity()))));
+                          } else {
+                            genreRevenueMap.put(
+                                Map.of(genre.getId(), genre.getName()),
+                                (saleBookCopy
                                     .getBookCopy()
-                                    .getBook()
-                                    .getGenres()
-                                    .forEach(
-                                            genre -> {
-                                              if (genreRevenueMap.containsKey(Map.of(genre.getId(), genre.getName()))) {
-                                                genreRevenueMap.computeIfPresent(
-                                                        Map.of(genre.getId(), genre.getName()),
-                                                        (uuidStringMap, actualValue) ->
-                                                                actualValue.add(
-                                                                        saleBookCopy
-                                                                                .getBookCopy()
-                                                                                .getPrice(saleBookCopy.getSale().getCreationDateTime())
-                                                                                .multiply(
-                                                                                        BigDecimal.valueOf(saleBookCopy.getQuantity()))));
-                                              } else {
-                                                genreRevenueMap.put(
-                                                        Map.of(genre.getId(), genre.getName()),
-                                                        (saleBookCopy
-                                                                .getBookCopy()
-                                                                .getPrice(saleBookCopy.getSale().getCreationDateTime())
-                                                                .multiply(BigDecimal.valueOf(saleBookCopy.getQuantity()))));
-                                              }
-                                            }));
+                                    .getPrice(saleBookCopy.getSale().getCreationDateTime())
+                                    .multiply(BigDecimal.valueOf(saleBookCopy.getQuantity()))));
+                          }
+                        }));
 
     return genreRevenueMap.keySet().stream()
-            .flatMap(
-                    map ->
-                            map.keySet().stream()
-                                    .map(
-                                            genreId ->
-                                                    RevenueResponse.RevenueByGenreEntry.builder()
-                                                            .genreId(genreId)
-                                                            .genreName(map.get(genreId))
-                                                            .revenue(genreRevenueMap.get(Map.of(genreId, map.get(genreId))))
-                                                            .build()))
-            .toList();
+        .flatMap(
+            map ->
+                map.keySet().stream()
+                    .map(
+                        genreId ->
+                            RevenueResponse.RevenueByGenreEntry.builder()
+                                .genreId(genreId)
+                                .genreName(map.get(genreId))
+                                .revenue(genreRevenueMap.get(Map.of(genreId, map.get(genreId))))
+                                .build()))
+        .toList();
   }
 
   public List<RevenueResponse.TopSellerEntry> getTopSellers(int limit) {
     return saleRepository.findTopSellers(PageRequest.of(0, limit)).stream()
-            .map(
-                    p ->
-                            RevenueResponse.TopSellerEntry.builder()
-                                    .bookId(p.getBookId())
-                                    .title(p.getTitle())
-                                    .unitsSold(p.getTotalSold())
-                                    .build())
-            .toList();
+        .map(
+            p ->
+                RevenueResponse.TopSellerEntry.builder()
+                    .bookId(p.getBookId())
+                    .title(p.getTitle())
+                    .unitsSold(p.getTotalSold())
+                    .build())
+        .toList();
   }
 
   private SaleBookCopy createSaleBookCopy(Sale sale, UUID bookCopyId, int quantity) {
@@ -178,25 +185,21 @@ public class SaleService {
                     new ResourceNotFoundException(
                         "Book copy with id: " + bookCopyId + " not found"));
 
-    return SaleBookCopy.builder()
-        .sale(sale)
-        .bookCopy(bookCopy)
-        .quantity(quantity)
-        .build();
+    return SaleBookCopy.builder().sale(sale).bookCopy(bookCopy).quantity(quantity).build();
   }
 
   private BigDecimal getSaleRevenue(Sale sale) {
     return BigDecimal.valueOf(
-            sale.getBooks().stream()
-                    .mapToDouble(
-                            saleBookCopy ->
-                                    saleBookCopy.getQuantity()
-                                            * Double.parseDouble(
-                                            saleBookCopy
-                                                    .getBookCopy()
-                                                    .getPrice(sale.getCreationDateTime())
-                                                    .toString()))
-                    .sum());
+        sale.getBooks().stream()
+            .mapToDouble(
+                saleBookCopy ->
+                    saleBookCopy.getQuantity()
+                        * Double.parseDouble(
+                            saleBookCopy
+                                .getBookCopy()
+                                .getPrice(sale.getCreationDateTime())
+                                .toString()))
+            .sum());
   }
 
   private SaleResponse toResponse(Sale sale) {

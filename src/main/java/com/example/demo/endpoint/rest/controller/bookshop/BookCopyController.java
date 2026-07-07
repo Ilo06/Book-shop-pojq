@@ -42,8 +42,7 @@ public class BookCopyController {
 
   @PostMapping
   public ResponseEntity<BookCopyResponse> createBookCopy(
-      @PathVariable UUID bookId,
-      @Valid @RequestBody CreateBookCopyDTO input) {
+      @PathVariable UUID bookId, @Valid @RequestBody CreateBookCopyDTO input) {
     return ResponseEntity.status(HttpStatus.CREATED)
         .header("Content-Type", "application/json")
         .body(bookCopyService.create(bookId, input));

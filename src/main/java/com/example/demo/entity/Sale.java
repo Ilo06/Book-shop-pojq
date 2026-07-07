@@ -43,7 +43,11 @@ public class Sale {
   @Column
   private Instant finalizationDateTime;
 
-  @OneToMany(mappedBy = "sale", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(
+      mappedBy = "sale",
+      fetch = FetchType.LAZY,
+      cascade = CascadeType.ALL,
+      orphanRemoval = true)
   @Builder.Default
   private List<SaleBookCopy> books = new ArrayList<>();
 }

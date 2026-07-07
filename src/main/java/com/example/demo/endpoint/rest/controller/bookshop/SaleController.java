@@ -4,11 +4,10 @@ import com.example.demo.dto.request.CreateSaleDTO;
 import com.example.demo.dto.response.RevenueResponse;
 import com.example.demo.exception.BadRequestException;
 import com.example.demo.service.SaleService;
+import jakarta.validation.Valid;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,39 +42,38 @@ public class SaleController {
   }
 
   @PostMapping("/{saleId}/finalize")
-  public ResponseEntity<?> finalize(@PathVariable UUID saleId,
-                                    @RequestParam boolean confirm) {
+  public ResponseEntity<?> finalize(@PathVariable UUID saleId, @RequestParam boolean confirm) {
     return ResponseEntity.status(HttpStatus.OK)
-            .header("Content-Type", "application/json")
-            .body(saleService.finalize(saleId, confirm));
+        .header("Content-Type", "application/json")
+        .body(saleService.finalize(saleId, confirm));
   }
 
   @GetMapping("/today-revenue")
   public ResponseEntity<RevenueResponse.TodayRevenue> getTodayRevenue() {
     return ResponseEntity.status(HttpStatus.OK)
-            .header("Content-Type", "application/json")
-            .body(saleService.getTodayRevenue());
+        .header("Content-Type", "application/json")
+        .body(saleService.getTodayRevenue());
   }
 
   @GetMapping("/monthly-revenue")
   public ResponseEntity<RevenueResponse.MonthlyRevenue> getMonthlyRevenue() {
     return ResponseEntity.status(HttpStatus.OK)
-            .header("Content-Type", "application/json")
-            .body(saleService.getMonthlyRevenue());
+        .header("Content-Type", "application/json")
+        .body(saleService.getMonthlyRevenue());
   }
 
   @GetMapping("/top-sellers")
   public ResponseEntity<List<RevenueResponse.TopSellerEntry>> getTopSellers(
-          @RequestParam(defaultValue = "10") int limit) {
+      @RequestParam(defaultValue = "10") int limit) {
     return ResponseEntity.status(HttpStatus.OK)
-            .header("Content-Type", "application/json")
-            .body(saleService.getTopSellers(limit));
+        .header("Content-Type", "application/json")
+        .body(saleService.getTopSellers(limit));
   }
 
   @GetMapping("/revenue-by-genre")
   public ResponseEntity<List<RevenueResponse.RevenueByGenreEntry>> getRevenueByGenre() {
     return ResponseEntity.status(HttpStatus.OK)
-            .header("Content-Type", "application/json")
-            .body(saleService.getRevenueByGenre());
+        .header("Content-Type", "application/json")
+        .body(saleService.getRevenueByGenre());
   }
 }

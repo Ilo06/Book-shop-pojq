@@ -41,10 +41,11 @@ public class ArrivalService {
   public ArrivalResponse create(CreateArrivalDTO input) {
     Arrival arrival = Arrival.builder().arrivalDateTime(input.getArrivalDateTime()).build();
 
-    if (bookCopyRepository.findAllById(input.getBooks()
-            .stream()
-            .map(QuantifiedBookCopyDTO::getBookCopyId).toList())
-            .size() != input.getBooks().size()) {
+    if (bookCopyRepository
+            .findAllById(
+                input.getBooks().stream().map(QuantifiedBookCopyDTO::getBookCopyId).toList())
+            .size()
+        != input.getBooks().size()) {
       throw new ResourceNotFoundException("Some Book copy not found");
     }
 
@@ -66,7 +67,7 @@ public class ArrivalService {
                     new ResourceNotFoundException(
                         "BookCopy not found with id: " + dto.getBookCopyId()));
 
-    return new ArrivalBook(null, arrival,  bookCopy, dto.getQuantity());
+    return new ArrivalBook(null, arrival, bookCopy, dto.getQuantity());
   }
 
   private ArrivalResponse toResponse(Arrival arrival) {

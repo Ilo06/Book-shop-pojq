@@ -38,10 +38,14 @@ public class BookCopyService {
   @Transactional
   public BookCopyResponse create(UUID bookId, CreateBookCopyDTO input) {
     Book book = bookService.getOrThrow(bookId);
-    bookCopyRepository.findAllByBookId(bookId).forEach(bc -> {
-        if (bc.getType() == input.getType()) { throw new ResourceConflictException("Copy type already exists");
-      }}
-    );
+    bookCopyRepository
+        .findAllByBookId(bookId)
+        .forEach(
+            bc -> {
+              if (bc.getType() == input.getType()) {
+                throw new ResourceConflictException("Copy type already exists");
+              }
+            });
 
     BookCopy bookCopy =
         BookCopy.builder()
@@ -56,8 +60,7 @@ public class BookCopyService {
                 .bookCopy(bookCopy)
                 .date(Instant.now())
                 .price(input.getPrice())
-                .build())
-    );
+                .build()));
     return toResponse(bookCopyRepository.save(bookCopy));
   }
 
@@ -66,7 +69,8 @@ public class BookCopyService {
     BookCopy copy = getOrThrow(id);
     List<BookCopyPrice> prices = new ArrayList<>(copy.getPrices().stream().toList());
     if (input.getPrice() != null) {
-          prices.add(BookCopyPrice.builder()
+      prices.add(
+          BookCopyPrice.builder()
               .bookCopy(copy)
               .date(Instant.now())
               .price(input.getPrice())
