@@ -35,11 +35,11 @@ public class BookCopy {
   private Book book;
 
   @Enumerated(EnumType.STRING)
-  @Column(nullable = false, columnDefinition = "book_copy_type")
+  @Column(nullable = false)
   private BookCopyType type;
 
   @JsonIgnore
-  @OneToMany(mappedBy = "bookCopy")
+  @OneToMany(mappedBy = "bookCopy", cascade = CascadeType.ALL)
   private List<BookCopyPrice> prices;
 
   @Column(length = 10, nullable = false)

@@ -6,10 +6,12 @@ import com.example.demo.dto.response.BookCopyResponse;
 import com.example.demo.entity.Book;
 import com.example.demo.entity.BookCopy;
 import com.example.demo.entity.BookCopyPrice;
+import com.example.demo.exception.ResourceConflictException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.bookshop.BookCopyPriceRepository;
 import com.example.demo.repository.bookshop.BookCopyRepository;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -34,13 +36,18 @@ public class BookCopyService {
   }
 
   @Transactional
-  public BookCopyResponse create(CreateBookCopyDTO input) {
-    Book book = bookService.getOrThrow(input.getBookId());
+  public BookCopyResponse create(UUID bookId, CreateBookCopyDTO input) {
+    Book book = bookService.getOrThrow(bookId);
+    bookCopyRepository.findAllByBookId(bookId).forEach(bc -> {
+        if (bc.getType() == input.getType()) { throw new ResourceConflictException("Copy type already exists");
+      }}
+    );
+
     BookCopy bookCopy =
         BookCopy.builder()
             .book(book)
             .type(input.getType())
-            .prices(null)
+            .prices(new ArrayList<>())
             .location(input.getLocation())
             .build();
     bookCopy.setPrices(
@@ -49,17 +56,17 @@ public class BookCopyService {
                 .bookCopy(bookCopy)
                 .date(Instant.now())
                 .price(input.getPrice())
-                .build()));
+                .build())
+    );
     return toResponse(bookCopyRepository.save(bookCopy));
   }
 
   @Transactional
   public BookCopyResponse patch(UUID id, PatchBookCopyDTO input) {
     BookCopy copy = getOrThrow(id);
-    List<BookCopyPrice> prices = copy.getPrices();
+    List<BookCopyPrice> prices = new ArrayList<>(copy.getPrices().stream().toList());
     if (input.getPrice() != null) {
-      prices.add(
-          BookCopyPrice.builder()
+          prices.add(BookCopyPrice.builder()
               .bookCopy(copy)
               .date(Instant.now())
               .price(input.getPrice())
