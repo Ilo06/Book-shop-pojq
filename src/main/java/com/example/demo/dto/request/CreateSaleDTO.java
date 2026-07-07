@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,6 +14,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CreateSaleDTO {
   @NotNull private Instant creationDateTime;
-  @NotEmpty private List<UUID> bookCopyIds;
+  @NotEmpty private List<QuantifiedBookCopyDTO> quantifiedBookCopyList;
   @NotNull private Boolean isReservation;
 }

@@ -1,9 +1,12 @@
 package com.example.demo.endpoint.rest.controller.bookshop;
 
 import com.example.demo.dto.request.CreateSaleDTO;
+import com.example.demo.exception.BadRequestException;
 import com.example.demo.service.SaleService;
 import java.time.Instant;
 import java.util.UUID;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +27,7 @@ public class SaleController {
   }
 
   @PostMapping
-  public ResponseEntity<?> save(@RequestBody CreateSaleDTO sale) {
+  public ResponseEntity<?> save(@RequestBody @Valid CreateSaleDTO sale) throws BadRequestException {
     return ResponseEntity.status(HttpStatus.CREATED)
         .header("Content-Type", "application/json")
         .body(saleService.save(sale));
@@ -35,5 +38,13 @@ public class SaleController {
     return ResponseEntity.status(HttpStatus.OK)
         .header("Content-Type", "application/json")
         .body(saleService.findById(saleId));
+  }
+
+  @PostMapping("/{saleId}/finalize")
+  public ResponseEntity<?> finalize(@PathVariable UUID saleId,
+                                    @RequestParam boolean confirm) {
+    return ResponseEntity.status(HttpStatus.OK)
+            .header("Content-Type", "application/json")
+            .body(saleService.finalize(saleId, confirm));
   }
 }
