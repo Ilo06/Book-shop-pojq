@@ -1,9 +1,10 @@
 package com.example.demo.entity;
 
-import com.example.demo.entity.keys.SaleBookCopyId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.UUID;
 
 @Entity
 @Table(name = "sale_book_copy")
@@ -12,17 +13,17 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class SaleBookCopy {
-  @EmbeddedId private SaleBookCopyId saleBookCopyId;
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private UUID id;
 
   @JsonIgnore
   @ManyToOne
-  @MapsId("saleId")
   @JoinColumn(name = "sale_id")
   private Sale sale;
 
-  @OneToOne
-  @MapsId("bookCopyId")
-  @JoinColumn(name = "book_copy_id", unique = true)
+  @ManyToOne
+  @JoinColumn(name = "book_copy_id")
   private BookCopy bookCopy;
 
   @Column(name = "quantity", nullable = false, columnDefinition = "INTEGER CHECK (quantity > 0)")
