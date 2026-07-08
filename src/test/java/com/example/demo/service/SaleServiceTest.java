@@ -29,7 +29,6 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.data.domain.PageRequest;
 
 class SaleServiceTest {
 
@@ -239,7 +238,7 @@ class SaleServiceTest {
     when(projection.getTitle()).thenReturn("Best Seller");
     when(projection.getTotalSold()).thenReturn(50L);
 
-    when(saleRepository.findTopSellers(PageRequest.of(0, 5))).thenReturn(List.of(projection));
+    when(saleRepository.findTopSellers(5)).thenReturn(List.of(projection));
 
     List<RevenueResponse.TopSellerEntry> result = saleService.getTopSellers(5);
 
@@ -250,7 +249,7 @@ class SaleServiceTest {
 
   @Test
   void getTopSellers_shouldUseDefaultLimit() {
-    when(saleRepository.findTopSellers(PageRequest.of(0, 10))).thenReturn(List.of());
+    when(saleRepository.findTopSellers(10)).thenReturn(List.of());
 
     List<RevenueResponse.TopSellerEntry> result = saleService.getTopSellers(10);
 
