@@ -30,22 +30,25 @@ CREATE TABLE book (
 );
 
 CREATE TABLE book_genres (
+    id       UUID PRIMARY KEY,
     book_id  UUID NOT NULL REFERENCES book(id)  ON DELETE CASCADE,
     genre_id UUID NOT NULL REFERENCES genre(id) ON DELETE CASCADE,
-    PRIMARY KEY (book_id, genre_id)
+    UNIQUE (book_id, genre_id)
 );
 
 CREATE TABLE book_author (
+    id        UUID PRIMARY KEY,
     book_id   UUID NOT NULL REFERENCES book(id)   ON DELETE CASCADE,
     author_id UUID NOT NULL REFERENCES author(id) ON DELETE CASCADE,
-    PRIMARY KEY (book_id, author_id)
+    UNIQUE (book_id, author_id)
 );
 
 CREATE TABLE book_copy (
     id       UUID         DEFAULT gen_random_uuid() PRIMARY KEY,
     book_id  UUID         NOT NULL REFERENCES book(id) ON DELETE CASCADE,
-    type     VARCHAR(255) NOT NULL,
-    location VARCHAR(10)  NOT NULL
+    type     VARCHAR(255) NOT NULL CHECK (type IN ('PAPERBACK', 'HARDBACK', 'POCKET')),
+    location VARCHAR(10)  NOT NULL,
+    UNIQUE (book_id, type)
 );
 
 CREATE TABLE book_copy_prices (
@@ -57,10 +60,10 @@ CREATE TABLE book_copy_prices (
 
 CREATE TABLE sale (
     id                    UUID         DEFAULT gen_random_uuid() PRIMARY KEY,
-    status                VARCHAR(255) NOT NULL DEFAULT 'PENDING',
+    status                VARCHAR(255) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'CONFIRMED', 'REJECTED')),
     is_reservation        BOOLEAN      NOT NULL DEFAULT FALSE,
-    creation_datetime     TIMESTAMP    NOT NULL DEFAULT NOW(),
-    finalization_datetime TIMESTAMP
+    creation_date_time     TIMESTAMP    NOT NULL DEFAULT NOW(),
+    finalization_date_time TIMESTAMP
 );
 
 CREATE TABLE sale_book_copy (
