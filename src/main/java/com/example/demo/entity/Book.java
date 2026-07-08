@@ -41,15 +41,17 @@ public class Book {
   @JoinTable(
       name = "book_genres",
       joinColumns = @JoinColumn(name = "book_id"),
-      inverseJoinColumns = @JoinColumn(name = "genre_id"))
-  @OnDelete(action = OnDeleteAction.SET_NULL)
+      inverseJoinColumns = @JoinColumn(name = "genre_id"),
+      uniqueConstraints = @UniqueConstraint(columnNames = {"book_id", "genre_id"}))
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private List<Genre> genres;
 
   @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(
       name = "book_author",
       joinColumns = @JoinColumn(name = "book_id"),
-      inverseJoinColumns = @JoinColumn(name = "author_id"))
-  @OnDelete(action = OnDeleteAction.SET_NULL)
+      inverseJoinColumns = @JoinColumn(name = "author_id"),
+      uniqueConstraints = @UniqueConstraint(columnNames = {"book_id", "author_id"}))
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private List<Author> authors;
 }

@@ -47,7 +47,7 @@ public class BookService {
           "Book with ISBN '" + input.getIsbn() + "' already exists");
     }
     List<Genre> genres = new ArrayList<>();
-    input.getGenreIds().forEach(id -> genres.add(getGenreOrThrow(id)));
+    input.getGenreIds().stream().distinct().forEach(id -> genres.add(getGenreOrThrow(id)));
     List<Author> authors = resolveAuthors(input.getAuthorIds());
 
     Book book =
@@ -73,7 +73,9 @@ public class BookService {
     }
 
     List<Genre> genres = new ArrayList<>();
-    input.getGenreIds().forEach(genreId -> genres.add(getGenreOrThrow(genreId)));
+    input.getGenreIds().stream()
+        .distinct()
+        .forEach(genreId -> genres.add(getGenreOrThrow(genreId)));
     List<Author> authors = resolveAuthors(input.getAuthorIds());
 
     book.setTitle(input.getTitle());
@@ -149,6 +151,7 @@ public class BookService {
       return new ArrayList<>();
     }
     return authorIds.stream()
+        .distinct()
         .map(
             aId ->
                 authorRepository
