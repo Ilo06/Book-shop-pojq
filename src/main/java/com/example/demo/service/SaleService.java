@@ -211,6 +211,7 @@ public class SaleService {
                     SaleBookCopyResponse.builder()
                         .bookCopyId(saleBookCopy.getBookCopy().getId())
                         .price(saleBookCopy.getBookCopy().getPrice(sale.getCreationDateTime()))
+                        .quantity(saleBookCopy.getQuantity())
                         .build())
             .toList();
 

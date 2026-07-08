@@ -1026,6 +1026,8 @@ components:
         price:
           type: number
           format: double
+        quantity:
+          type: integer
 
     Sale:
       type: object

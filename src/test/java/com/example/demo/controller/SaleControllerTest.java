@@ -92,7 +92,8 @@ class SaleControllerTest {
                 List.of(
                     SaleBookCopyResponse.builder()
                         .bookCopyId(UUID.randomUUID())
-                        .price(java.math.BigDecimal.valueOf(19.99))
+                        .price(BigDecimal.valueOf(19.99))
+                        .quantity(1)
                         .build()))
             .build();
     when(saleService.save(any(CreateSaleDTO.class))).thenReturn(response);
