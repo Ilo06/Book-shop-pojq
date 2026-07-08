@@ -23,7 +23,6 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -161,11 +160,13 @@ public class SaleService {
                                 .genreName(map.get(genreId))
                                 .revenue(genreRevenueMap.get(Map.of(genreId, map.get(genreId))))
                                 .build()))
-        .toList();
+        .sorted(Comparator.comparing(RevenueResponse.RevenueByGenreEntry::getRevenue))
+        .toList()
+        .reversed();
   }
 
   public List<RevenueResponse.TopSellerEntry> getTopSellers(int limit) {
-    return saleRepository.findTopSellers(PageRequest.of(0, limit)).stream()
+    return saleRepository.findTopSellers(limit).stream()
         .map(
             p ->
                 RevenueResponse.TopSellerEntry.builder()

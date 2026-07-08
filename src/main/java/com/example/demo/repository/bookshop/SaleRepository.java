@@ -5,9 +5,9 @@ import com.example.demo.repository.projection.TopSellerProjection;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -46,9 +46,9 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
       WHERE s.status = 'CONFIRMED'
       GROUP BY b.id, b.title
       ORDER BY SUM(sbc.quantity) DESC
-      LIMIT 5
+      LIMIT :limit
       """)
-  List<TopSellerProjection> findTopSellers(Pageable pageable);
+  List<TopSellerProjection> findTopSellers(@Param("limit") int limit);
 
   @Query(
       """
