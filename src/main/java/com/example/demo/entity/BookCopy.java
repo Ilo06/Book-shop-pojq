@@ -17,7 +17,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
-@Table(name = "book_copy")
+@Table(name = "book_copy", uniqueConstraints = @UniqueConstraint(columnNames = {"book_id", "type"}))
 @Getter
 @Setter
 @NoArgsConstructor

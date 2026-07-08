@@ -5,6 +5,8 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(name = "book_copy_prices")
@@ -20,6 +22,7 @@ public class BookCopyPrice {
 
   @ManyToOne(optional = false)
   @JoinColumn(name = "book_copy_id", nullable = false, referencedColumnName = "id")
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private BookCopy bookCopy;
 
   @Temporal(TemporalType.TIMESTAMP)
