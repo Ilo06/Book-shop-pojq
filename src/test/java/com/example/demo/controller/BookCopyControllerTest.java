@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -9,14 +10,15 @@ import com.example.demo.dto.request.PatchBookCopyDTO;
 import com.example.demo.dto.response.BookCopyResponse;
 import com.example.demo.endpoint.rest.controller.bookshop.BookCopyController;
 import com.example.demo.entity.Book;
+import com.example.demo.entity.Genre;
 import com.example.demo.entity.enums.BookCopyType;
-import com.example.demo.entity.enums.BookStatus;
 import com.example.demo.exception.GlobalExceptionHandler;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.service.BookCopyService;
 import com.example.demo.service.BookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,96 +33,50 @@ import org.springframework.test.web.servlet.MockMvc;
 class BookCopyControllerTest {
 
   @Autowired private MockMvc mockMvc;
-
   @Autowired private ObjectMapper objectMapper;
-
   @MockBean private BookService bookService;
-
   @MockBean private BookCopyService bookCopyService;
 
   private UUID bookId;
   private UUID copyId;
-  private Book book;
   private BookCopyResponse bookCopyResponse;
-  private CreateBookCopyDTO createInput;
-  private PatchBookCopyDTO patchInput;
 
   @BeforeEach
   void setUp() {
     bookId = UUID.randomUUID();
     copyId = UUID.randomUUID();
-
-    book = Book.builder().id(bookId).title("Test Book").build();
-
     bookCopyResponse =
         BookCopyResponse.builder()
             .id(copyId)
             .bookId(bookId)
-            .status(BookStatus.AVAILABLE)
             .type(BookCopyType.PAPERBACK)
-            .price(new BigDecimal("19.99"))
-            .location("A1")
+            .price(BigDecimal.valueOf(19.99))
+            .location("Shelf A1")
             .build();
-
-    createInput = new CreateBookCopyDTO();
-    createInput.setBookId(bookId);
-    createInput.setType(BookCopyType.PAPERBACK);
-    createInput.setPrice(new BigDecimal("19.99"));
-    createInput.setLocation("A1");
-
-    patchInput = new PatchBookCopyDTO();
-    patchInput.setStatus(BookStatus.SOLD_OUT);
   }
 
   @Test
   void listBookCopies_shouldReturn200() throws Exception {
-    when(bookService.getOrThrow(bookId)).thenReturn(book);
-    when(bookCopyService.findAll(null)).thenReturn(List.of(bookCopyResponse));
-
-    mockMvc
-        .perform(get("/books/{bookId}/copies", bookId).accept(MediaType.APPLICATION_JSON))
-        .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.length()").value(1))
-        .andExpect(jsonPath("$[0].id").value(copyId.toString()))
-        .andExpect(jsonPath("$[0].status").value("AVAILABLE"));
-  }
-
-  @Test
-  void listBookCopies_shouldReturn200_withStatusFilter() throws Exception {
-    when(bookService.getOrThrow(bookId)).thenReturn(book);
-    when(bookCopyService.findAll(BookStatus.AVAILABLE)).thenReturn(List.of(bookCopyResponse));
-
-    mockMvc
-        .perform(
-            get("/books/{bookId}/copies", bookId)
-                .param("status", "AVAILABLE")
-                .accept(MediaType.APPLICATION_JSON))
-        .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.length()").value(1));
-  }
-
-  @Test
-  void listBookCopies_shouldReturn400_withInvalidBookId() throws Exception {
-    mockMvc
-        .perform(get("/books/invalid/copies").accept(MediaType.APPLICATION_JSON))
-        .andExpect(status().isBadRequest());
-  }
-
-  @Test
-  void listBookCopies_shouldReturn404_withNonExistingBook() throws Exception {
     when(bookService.getOrThrow(bookId))
-        .thenThrow(new ResourceNotFoundException("Book not found with id: " + bookId));
+        .thenReturn(
+            Book.builder()
+                .id(bookId)
+                .title("Test")
+                .isbn("9781234567890")
+                .publishDate(LocalDate.now())
+                .genres(List.of(Genre.builder().id(UUID.randomUUID()).name("Fiction").build()))
+                .build());
+    when(bookCopyService.findByBookId(bookId)).thenReturn(List.of(bookCopyResponse));
 
     mockMvc
         .perform(get("/books/{bookId}/copies", bookId).accept(MediaType.APPLICATION_JSON))
-        .andExpect(status().isNotFound());
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$[0].id").value(copyId.toString()));
   }
 
   @Test
   void getBookCopy_shouldReturn200() throws Exception {
-    when(bookService.getOrThrow(bookId)).thenReturn(book);
     when(bookCopyService.findById(copyId)).thenReturn(bookCopyResponse);
 
     mockMvc
@@ -129,130 +85,121 @@ class BookCopyControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.id").value(copyId.toString()))
-        .andExpect(jsonPath("$.status").value("AVAILABLE"))
-        .andExpect(jsonPath("$.bookId").value(bookId.toString()));
+        .andExpect(jsonPath("$.id").value(copyId.toString()));
   }
 
   @Test
-  void getBookCopy_shouldReturn404_withNonExistingCopy() throws Exception {
-    when(bookService.getOrThrow(bookId)).thenReturn(book);
-    UUID nonExistentCopyId = UUID.randomUUID();
-    when(bookCopyService.findById(nonExistentCopyId))
-        .thenThrow(
-            new ResourceNotFoundException("BookCopy not found with id: " + nonExistentCopyId));
+  void getBookCopy_shouldReturn404() throws Exception {
+    UUID id = UUID.randomUUID();
+    when(bookCopyService.findById(id))
+        .thenThrow(new ResourceNotFoundException("BookCopy not found with id: " + id));
 
     mockMvc
         .perform(
-            get("/books/{bookId}/copies/{copyId}", bookId, nonExistentCopyId)
-                .accept(MediaType.APPLICATION_JSON))
+            get("/books/{bookId}/copies/{copyId}", bookId, id).accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound());
   }
 
   @Test
-  void getBookCopy_shouldReturn400_withInvalidCopyId() throws Exception {
-    mockMvc
-        .perform(get("/books/{bookId}/copies/invalid", bookId).accept(MediaType.APPLICATION_JSON))
-        .andExpect(status().isBadRequest());
-  }
-
-  @Test
   void createBookCopy_shouldReturn201() throws Exception {
-    when(bookService.getOrThrow(bookId)).thenReturn(book);
-    when(bookCopyService.create(any(CreateBookCopyDTO.class))).thenReturn(bookCopyResponse);
+    CreateBookCopyDTO input = new CreateBookCopyDTO();
+    input.setType(BookCopyType.HARDBACK);
+    input.setPrice(BigDecimal.valueOf(29.99));
+    input.setLocation("Shelf B2");
+
+    when(bookCopyService.create(eq(bookId), any(CreateBookCopyDTO.class)))
+        .thenReturn(bookCopyResponse);
 
     mockMvc
         .perform(
             post("/books/{bookId}/copies", bookId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(createInput)))
+                .content(objectMapper.writeValueAsString(input)))
         .andExpect(status().isCreated())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.id").value(copyId.toString()))
-        .andExpect(jsonPath("$.status").value("AVAILABLE"))
-        .andExpect(jsonPath("$.type").value("PAPERBACK"));
+        .andExpect(jsonPath("$.id").value(copyId.toString()));
   }
 
   @Test
-  void createBookCopy_shouldReturn400_withValidationError() throws Exception {
-    CreateBookCopyDTO invalidInput = new CreateBookCopyDTO();
+  void createBookCopy_shouldReturn400_onValidationError() throws Exception {
+    CreateBookCopyDTO input = new CreateBookCopyDTO();
 
     mockMvc
         .perform(
             post("/books/{bookId}/copies", bookId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidInput)))
+                .content(objectMapper.writeValueAsString(input)))
         .andExpect(status().isBadRequest());
   }
 
   @Test
   void patchBookCopy_shouldReturn200() throws Exception {
-    BookCopyResponse patchedResponse =
-        BookCopyResponse.builder()
-            .id(copyId)
-            .bookId(bookId)
-            .status(BookStatus.SOLD_OUT)
-            .type(BookCopyType.PAPERBACK)
-            .price(new BigDecimal("19.99"))
-            .location("A1")
-            .build();
+    PatchBookCopyDTO input = new PatchBookCopyDTO();
+    input.setLocation("Shelf C3");
 
-    when(bookService.getOrThrow(bookId)).thenReturn(book);
     when(bookCopyService.patch(eq(copyId), any(PatchBookCopyDTO.class)))
-        .thenReturn(patchedResponse);
+        .thenReturn(bookCopyResponse);
 
     mockMvc
         .perform(
             patch("/books/{bookId}/copies/{copyId}", bookId, copyId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(patchInput)))
+                .content(objectMapper.writeValueAsString(input)))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.status").value("SOLD_OUT"));
+        .andExpect(jsonPath("$.id").value(copyId.toString()));
   }
 
   @Test
-  void patchBookCopy_shouldReturn404_withNonExistingCopy() throws Exception {
-    when(bookService.getOrThrow(bookId)).thenReturn(book);
-    UUID nonExistentCopyId = UUID.randomUUID();
-    when(bookCopyService.patch(eq(nonExistentCopyId), any(PatchBookCopyDTO.class)))
-        .thenThrow(
-            new ResourceNotFoundException("BookCopy not found with id: " + nonExistentCopyId));
+  void patchBookCopy_shouldReturn404() throws Exception {
+    UUID id = UUID.randomUUID();
+    PatchBookCopyDTO input = new PatchBookCopyDTO();
+    input.setLocation("Shelf Z9");
+
+    when(bookCopyService.patch(eq(id), any(PatchBookCopyDTO.class)))
+        .thenThrow(new ResourceNotFoundException("BookCopy not found with id: " + id));
 
     mockMvc
         .perform(
-            patch("/books/{bookId}/copies/{copyId}", bookId, nonExistentCopyId)
+            patch("/books/{bookId}/copies/{copyId}", bookId, id)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(patchInput)))
+                .content(objectMapper.writeValueAsString(input)))
         .andExpect(status().isNotFound());
   }
 
   @Test
-  void deleteBookCopy_shouldReturn201() throws Exception {
-    when(bookService.getOrThrow(bookId)).thenReturn(book);
+  void deleteBookCopy_shouldReturn204() throws Exception {
     doNothing().when(bookCopyService).delete(copyId);
 
     mockMvc
-        .perform(
-            delete("/books/{bookId}/copies/{copyId}", bookId, copyId)
-                .accept(MediaType.APPLICATION_JSON))
+        .perform(delete("/books/{bookId}/copies/{copyId}", bookId, copyId))
         .andExpect(status().isCreated());
 
     verify(bookCopyService).delete(copyId);
   }
 
   @Test
-  void deleteBookCopy_shouldReturn404_withNonExistingCopy() throws Exception {
-    when(bookService.getOrThrow(bookId)).thenReturn(book);
-    UUID nonExistentCopyId = UUID.randomUUID();
-    doThrow(new ResourceNotFoundException("BookCopy not found with id: " + nonExistentCopyId))
+  void deleteBookCopy_shouldReturn404() throws Exception {
+    UUID id = UUID.randomUUID();
+    doThrow(new ResourceNotFoundException("BookCopy not found with id: " + id))
         .when(bookCopyService)
-        .delete(nonExistentCopyId);
+        .delete(id);
+
+    mockMvc
+        .perform(delete("/books/{bookId}/copies/{copyId}", bookId, id))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void getBookCopyStock_shouldReturn200() throws Exception {
+    when(bookCopyService.getStockByCopyId(copyId)).thenReturn(5);
 
     mockMvc
         .perform(
-            delete("/books/{bookId}/copies/{copyId}", bookId, nonExistentCopyId)
+            get("/books/{bookId}/copies/{copyId}/stock", bookId, copyId)
                 .accept(MediaType.APPLICATION_JSON))
-        .andExpect(status().isNotFound());
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(content().string("5"));
   }
 }

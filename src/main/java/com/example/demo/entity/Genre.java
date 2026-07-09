@@ -22,6 +22,6 @@ public class Genre {
   private String name;
 
   @JsonIgnore
-  @OneToMany(mappedBy = "genre", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  @ManyToMany(mappedBy = "genres", fetch = FetchType.LAZY)
   private List<Book> books;
 }

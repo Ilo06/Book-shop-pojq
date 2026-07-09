@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-public class DashboardResponse {
+public class RevenueResponse {
 
   @Data
   @Builder
@@ -23,16 +23,6 @@ public class DashboardResponse {
   @AllArgsConstructor
   public static class MonthlyRevenue {
     private BigDecimal monthlyRevenue;
-  }
-
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class StockEntry {
-    private UUID bookId;
-    private String title;
-    private Long availableCopies;
   }
 
   @Data

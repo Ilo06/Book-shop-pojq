@@ -14,4 +14,5 @@ import lombok.NoArgsConstructor;
 public class SaleBookCopyResponse {
   private UUID bookCopyId;
   private BigDecimal price;
+  private Integer quantity;
 }

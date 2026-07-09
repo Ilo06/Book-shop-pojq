@@ -1,7 +1,7 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -23,9 +23,9 @@ public class Arrival {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  @Temporal(TemporalType.DATE)
+  @Temporal(TemporalType.TIMESTAMP)
   @Column(nullable = false)
-  private LocalDate arrivalDate;
+  private Instant arrivalDateTime;
 
   @OneToMany(mappedBy = "arrival")
   private List<ArrivalBook> books;

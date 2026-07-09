@@ -1,8 +1,12 @@
 package com.example.demo.endpoint.rest.controller.bookshop;
 
 import com.example.demo.dto.request.CreateSaleDTO;
+import com.example.demo.dto.response.RevenueResponse;
+import com.example.demo.exception.BadRequestException;
 import com.example.demo.service.SaleService;
-import java.time.LocalDate;
+import jakarta.validation.Valid;
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,15 +21,14 @@ public class SaleController {
 
   @GetMapping
   public ResponseEntity<?> getAll(
-      @RequestParam(required = false) LocalDate from,
-      @RequestParam(required = false) LocalDate to) {
+      @RequestParam(required = false) Instant from, @RequestParam(required = false) Instant to) {
     return ResponseEntity.status(HttpStatus.OK)
         .header("Content-Type", "application/json")
         .body(saleService.findByDateBetween(from, to));
   }
 
   @PostMapping
-  public ResponseEntity<?> save(@RequestBody CreateSaleDTO sale) {
+  public ResponseEntity<?> save(@RequestBody @Valid CreateSaleDTO sale) throws BadRequestException {
     return ResponseEntity.status(HttpStatus.CREATED)
         .header("Content-Type", "application/json")
         .body(saleService.save(sale));
@@ -36,5 +39,41 @@ public class SaleController {
     return ResponseEntity.status(HttpStatus.OK)
         .header("Content-Type", "application/json")
         .body(saleService.findById(saleId));
+  }
+
+  @PostMapping("/{saleId}/finalize")
+  public ResponseEntity<?> finalize(@PathVariable UUID saleId, @RequestParam boolean confirm) {
+    return ResponseEntity.status(HttpStatus.OK)
+        .header("Content-Type", "application/json")
+        .body(saleService.finalize(saleId, confirm));
+  }
+
+  @GetMapping("/today-revenue")
+  public ResponseEntity<RevenueResponse.TodayRevenue> getTodayRevenue() {
+    return ResponseEntity.status(HttpStatus.OK)
+        .header("Content-Type", "application/json")
+        .body(saleService.getTodayRevenue());
+  }
+
+  @GetMapping("/monthly-revenue")
+  public ResponseEntity<RevenueResponse.MonthlyRevenue> getMonthlyRevenue() {
+    return ResponseEntity.status(HttpStatus.OK)
+        .header("Content-Type", "application/json")
+        .body(saleService.getMonthlyRevenue());
+  }
+
+  @GetMapping("/top-sellers")
+  public ResponseEntity<List<RevenueResponse.TopSellerEntry>> getTopSellers(
+      @RequestParam(defaultValue = "10") int limit) {
+    return ResponseEntity.status(HttpStatus.OK)
+        .header("Content-Type", "application/json")
+        .body(saleService.getTopSellers(limit));
+  }
+
+  @GetMapping("/revenue-by-genre")
+  public ResponseEntity<List<RevenueResponse.RevenueByGenreEntry>> getRevenueByGenre() {
+    return ResponseEntity.status(HttpStatus.OK)
+        .header("Content-Type", "application/json")
+        .body(saleService.getRevenueByGenre());
   }
 }

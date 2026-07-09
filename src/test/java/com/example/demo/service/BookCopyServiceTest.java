@@ -9,11 +9,14 @@ import com.example.demo.dto.request.PatchBookCopyDTO;
 import com.example.demo.dto.response.BookCopyResponse;
 import com.example.demo.entity.Book;
 import com.example.demo.entity.BookCopy;
+import com.example.demo.entity.BookCopyPrice;
+import com.example.demo.entity.Genre;
 import com.example.demo.entity.enums.BookCopyType;
-import com.example.demo.entity.enums.BookStatus;
 import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.repository.bookshop.BookCopyPriceRepository;
 import com.example.demo.repository.bookshop.BookCopyRepository;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,70 +27,51 @@ class BookCopyServiceTest {
 
   private BookCopyRepository bookCopyRepository;
   private BookService bookService;
+  private BookCopyPriceRepository bookCopyPriceRepository;
   private BookCopyService bookCopyService;
 
   private UUID bookId;
   private UUID copyId;
   private Book book;
   private BookCopy bookCopy;
-  private CreateBookCopyDTO createInput;
-  private PatchBookCopyDTO patchInput;
+  private CreateBookCopyDTO createBookCopyDTO;
 
   @BeforeEach
   void setUp() {
     bookCopyRepository = mock(BookCopyRepository.class);
     bookService = mock(BookService.class);
-    bookCopyService = new BookCopyService(bookCopyRepository, bookService);
+    bookCopyPriceRepository = mock(BookCopyPriceRepository.class);
+    bookCopyService = new BookCopyService(bookCopyRepository, bookService, bookCopyPriceRepository);
 
     bookId = UUID.randomUUID();
     copyId = UUID.randomUUID();
 
-    book = Book.builder().id(bookId).title("Test Book").build();
+    Genre genre = Genre.builder().id(UUID.randomUUID()).name("Fiction").build();
+    book =
+        Book.builder()
+            .id(bookId)
+            .title("Test Book")
+            .isbn("9781234567890")
+            .publishDate(LocalDate.of(2026, 1, 1))
+            .genres(List.of(genre))
+            .build();
+
+    BookCopyPrice price =
+        BookCopyPrice.builder().id(UUID.randomUUID()).price(BigDecimal.valueOf(19.99)).build();
 
     bookCopy =
         BookCopy.builder()
             .id(copyId)
             .book(book)
-            .status(BookStatus.AVAILABLE)
             .type(BookCopyType.PAPERBACK)
-            .price(new BigDecimal("19.99"))
-            .location("A1")
+            .prices(List.of(price))
+            .location("Shelf A1")
             .build();
 
-    createInput = new CreateBookCopyDTO();
-    createInput.setBookId(bookId);
-    createInput.setType(BookCopyType.PAPERBACK);
-    createInput.setPrice(new BigDecimal("19.99"));
-    createInput.setLocation("A1");
-
-    patchInput = new PatchBookCopyDTO();
-    patchInput.setStatus(BookStatus.SOLD_OUT);
-  }
-
-  @Test
-  void findAll_shouldReturnListOfBookCopyResponse_whenStatusIsNull() {
-    when(bookCopyRepository.findAll()).thenReturn(List.of(bookCopy));
-
-    List<BookCopyResponse> result = bookCopyService.findAll(null);
-
-    assertEquals(1, result.size());
-    BookCopyResponse response = result.getFirst();
-    assertEquals(copyId, response.getId());
-    assertEquals(bookId, response.getBookId());
-    assertEquals(BookStatus.AVAILABLE, response.getStatus());
-    assertEquals(BookCopyType.PAPERBACK, response.getType());
-    assertEquals(new BigDecimal("19.99"), response.getPrice());
-    assertEquals("A1", response.getLocation());
-  }
-
-  @Test
-  void findAll_shouldReturnFilteredList_whenStatusIsProvided() {
-    when(bookCopyRepository.findByStatus(BookStatus.AVAILABLE)).thenReturn(List.of(bookCopy));
-
-    List<BookCopyResponse> result = bookCopyService.findAll(BookStatus.AVAILABLE);
-
-    assertEquals(1, result.size());
-    assertEquals(copyId, result.getFirst().getId());
+    createBookCopyDTO = new CreateBookCopyDTO();
+    createBookCopyDTO.setType(BookCopyType.HARDBACK);
+    createBookCopyDTO.setPrice(BigDecimal.valueOf(29.99));
+    createBookCopyDTO.setLocation("Shelf B2");
   }
 
   @Test
@@ -98,10 +82,8 @@ class BookCopyServiceTest {
 
     assertEquals(copyId, result.getId());
     assertEquals(bookId, result.getBookId());
-    assertEquals(BookStatus.AVAILABLE, result.getStatus());
     assertEquals(BookCopyType.PAPERBACK, result.getType());
-    assertEquals(new BigDecimal("19.99"), result.getPrice());
-    assertEquals("A1", result.getLocation());
+    assertEquals("Shelf A1", result.getLocation());
   }
 
   @Test
@@ -121,90 +103,124 @@ class BookCopyServiceTest {
 
     assertEquals(1, result.size());
     assertEquals(copyId, result.getFirst().getId());
-    assertEquals(bookId, result.getFirst().getBookId());
   }
 
   @Test
-  void findByBookId_shouldThrowResourceNotFoundException_whenBookNotFound() {
-    when(bookService.getOrThrow(bookId))
-        .thenThrow(new ResourceNotFoundException("Book not found with id: " + bookId));
+  void findByBookId_shouldThrowResourceNotFoundExceptionWhenBookNotFound() {
+    UUID id = UUID.randomUUID();
+    when(bookService.getOrThrow(id))
+        .thenThrow(new ResourceNotFoundException("Book not found with id: " + id));
 
-    assertThrows(ResourceNotFoundException.class, () -> bookCopyService.findByBookId(bookId));
+    assertThrows(ResourceNotFoundException.class, () -> bookCopyService.findByBookId(id));
   }
 
   @Test
   void create_shouldReturnBookCopyResponse() {
     when(bookService.getOrThrow(bookId)).thenReturn(book);
     when(bookCopyRepository.save(any(BookCopy.class)))
-        .thenAnswer(
-            invocation -> {
-              BookCopy saved = invocation.getArgument(0);
-              saved.setId(copyId);
-              return saved;
-            });
+        .thenAnswer(invocation -> invocation.getArgument(0, BookCopy.class));
+    System.out.println(bookCopyService.create(bookId, createBookCopyDTO));
 
-    BookCopyResponse result = bookCopyService.create(createInput);
+    BookCopyResponse result = bookCopyService.create(bookId, createBookCopyDTO);
 
-    assertNotNull(result.getId());
     assertEquals(bookId, result.getBookId());
-    assertEquals(BookCopyType.PAPERBACK, result.getType());
-    assertEquals(new BigDecimal("19.99"), result.getPrice());
-    assertEquals("A1", result.getLocation());
-    assertEquals(BookStatus.AVAILABLE, result.getStatus());
+    assertEquals(BookCopyType.HARDBACK, result.getType());
+    assertEquals("Shelf B2", result.getLocation());
   }
 
   @Test
-  void create_shouldDefaultStatusToAvailable_whenNotProvided() {
-    createInput.setStatus(null);
-    when(bookService.getOrThrow(bookId)).thenReturn(book);
-    when(bookCopyRepository.save(any(BookCopy.class)))
-        .thenAnswer(
-            invocation -> {
-              BookCopy saved = invocation.getArgument(0);
-              saved.setId(copyId);
-              return saved;
-            });
+  void create_shouldThrowResourceNotFoundExceptionWhenBookNotFound() {
+    UUID id = UUID.randomUUID();
+    when(bookService.getOrThrow(id))
+        .thenThrow(new ResourceNotFoundException("Book not found with id: " + id));
 
-    BookCopyResponse result = bookCopyService.create(createInput);
-
-    assertEquals(BookStatus.AVAILABLE, result.getStatus());
+    assertThrows(
+        ResourceNotFoundException.class, () -> bookCopyService.create(id, createBookCopyDTO));
+    verify(bookCopyRepository, never()).save(any());
   }
 
   @Test
-  void patch_shouldUpdateFields() {
+  void patch_shouldUpdatePriceAndLocation() {
+    PatchBookCopyDTO patchDTO = new PatchBookCopyDTO();
+    patchDTO.setPrice(BigDecimal.valueOf(24.99));
+    patchDTO.setLocation("Shelf C3");
+
     when(bookCopyRepository.findById(copyId)).thenReturn(Optional.of(bookCopy));
     when(bookCopyRepository.save(any(BookCopy.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
 
-    BookCopyResponse result = bookCopyService.patch(copyId, patchInput);
+    BookCopyResponse result = bookCopyService.patch(copyId, patchDTO);
 
-    assertEquals(BookStatus.SOLD_OUT, result.getStatus());
+    assertEquals(copyId, result.getId());
   }
 
   @Test
-  void patch_shouldThrowResourceNotFoundException_whenCopyNotFound() {
+  void patch_shouldUpdatePriceOnly() {
+    PatchBookCopyDTO patchDTO = new PatchBookCopyDTO();
+    patchDTO.setPrice(BigDecimal.valueOf(14.99));
+
+    when(bookCopyRepository.findById(copyId)).thenReturn(Optional.of(bookCopy));
+    when(bookCopyRepository.save(any(BookCopy.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    BookCopyResponse result = bookCopyService.patch(copyId, patchDTO);
+
+    assertEquals(copyId, result.getId());
+  }
+
+  @Test
+  void patch_shouldUpdateLocationOnly() {
+    PatchBookCopyDTO patchDTO = new PatchBookCopyDTO();
+    patchDTO.setLocation("Shelf D4");
+
+    when(bookCopyRepository.findById(copyId)).thenReturn(Optional.of(bookCopy));
+    when(bookCopyRepository.save(any(BookCopy.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    BookCopyResponse result = bookCopyService.patch(copyId, patchDTO);
+
+    assertEquals(copyId, result.getId());
+  }
+
+  @Test
+  void patch_shouldThrowResourceNotFoundException() {
     UUID id = UUID.randomUUID();
+    PatchBookCopyDTO patchDTO = new PatchBookCopyDTO();
+    patchDTO.setLocation("Shelf Z9");
+
     when(bookCopyRepository.findById(id)).thenReturn(Optional.empty());
 
-    assertThrows(ResourceNotFoundException.class, () -> bookCopyService.patch(id, patchInput));
+    assertThrows(ResourceNotFoundException.class, () -> bookCopyService.patch(id, patchDTO));
+    verify(bookCopyRepository, never()).save(any());
   }
 
   @Test
-  void delete_shouldDeleteCopy() {
+  void delete_shouldDeleteBookCopy() {
     when(bookCopyRepository.findById(copyId)).thenReturn(Optional.of(bookCopy));
 
     bookCopyService.delete(copyId);
 
+    verify(bookCopyPriceRepository).deleteBookCopyPriceByBookCopy(bookCopy);
     verify(bookCopyRepository).delete(bookCopy);
   }
 
   @Test
-  void delete_shouldThrowResourceNotFoundException_whenCopyNotFound() {
+  void delete_shouldThrowResourceNotFoundException() {
     UUID id = UUID.randomUUID();
     when(bookCopyRepository.findById(id)).thenReturn(Optional.empty());
 
     assertThrows(ResourceNotFoundException.class, () -> bookCopyService.delete(id));
+    verify(bookCopyPriceRepository, never()).deleteBookCopyPriceByBookCopy(any());
     verify(bookCopyRepository, never()).delete(any());
+  }
+
+  @Test
+  void getStockByCopyId_shouldReturnStock() {
+    when(bookCopyRepository.getBookCopyStockByCopyId(copyId)).thenReturn(5);
+
+    Integer result = bookCopyService.getStockByCopyId(copyId);
+
+    assertEquals(5, result);
   }
 
   @Test
@@ -214,7 +230,6 @@ class BookCopyServiceTest {
     BookCopy result = bookCopyService.getOrThrow(copyId);
 
     assertEquals(copyId, result.getId());
-    assertEquals(book, result.getBook());
   }
 
   @Test

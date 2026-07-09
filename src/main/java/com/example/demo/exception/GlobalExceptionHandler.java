@@ -63,7 +63,20 @@ public class GlobalExceptionHandler {
         new ErrorResponse(
             HttpStatus.BAD_REQUEST.value(),
             "Bad Request",
-            "Malformed JSON request body or invalid data type format.",
+            "Malformed JSON request body or invalid data type format.\n%s"
+                .formatted(ex.getMessage()),
+            LocalDateTime.now());
+    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(BadRequestException.class)
+  public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestException ex) {
+    ErrorResponse error =
+        new ErrorResponse(
+            HttpStatus.BAD_REQUEST.value(),
+            "Bad Request",
+            "Malformed JSON request body or invalid data type format.\n%s"
+                .formatted(ex.getMessage()),
             LocalDateTime.now());
     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
   }

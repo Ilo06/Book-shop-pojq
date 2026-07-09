@@ -13,6 +13,7 @@ import com.example.demo.entity.Genre;
 import com.example.demo.exception.ResourceConflictException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.bookshop.AuthorRepository;
+import com.example.demo.repository.bookshop.BookCopyRepository;
 import com.example.demo.repository.bookshop.BookRepository;
 import com.example.demo.repository.bookshop.GenreRepository;
 import java.time.LocalDate;
@@ -27,6 +28,7 @@ class BookServiceTest {
   private BookRepository bookRepository;
   private GenreRepository genreRepository;
   private AuthorRepository authorRepository;
+  private BookCopyRepository bookCopyRepository;
   private BookService bookService;
 
   private UUID genreId;
@@ -41,8 +43,10 @@ class BookServiceTest {
     bookRepository = mock(BookRepository.class);
     genreRepository = mock(GenreRepository.class);
     authorRepository = mock(AuthorRepository.class);
+    bookCopyRepository = mock(BookCopyRepository.class);
 
-    bookService = new BookService(bookRepository, genreRepository, authorRepository);
+    bookService =
+        new BookService(bookRepository, genreRepository, authorRepository, bookCopyRepository);
 
     genreId = UUID.randomUUID();
     authorId = UUID.randomUUID();
@@ -59,7 +63,7 @@ class BookServiceTest {
             .isbn("9781234567890")
             .description("Test book")
             .publishDate(LocalDate.of(2026, 1, 1))
-            .genre(genre)
+            .genres(List.of(genre))
             .authors(List.of(author))
             .build();
 
@@ -68,7 +72,7 @@ class BookServiceTest {
     createBookDTO.setIsbn("9780987654321");
     createBookDTO.setDescription("New book");
     createBookDTO.setPublishDate(LocalDate.of(2026, 6, 1));
-    createBookDTO.setGenreId(genreId);
+    createBookDTO.setGenreIds(List.of(genreId));
     createBookDTO.setAuthorIds(List.of(authorId));
   }
 
@@ -83,9 +87,10 @@ class BookServiceTest {
     assertEquals(book.getId(), summary.getId());
     assertEquals(book.getTitle(), summary.getTitle());
     assertEquals(book.getIsbn(), summary.getIsbn());
-    assertNotNull(summary.getGenre());
-    assertEquals(genreId, summary.getGenre().getId());
-    assertEquals("Fiction", summary.getGenre().getName());
+    assertNotNull(summary.getGenres());
+    assertEquals(1, summary.getGenres().size());
+    assertEquals(genreId, summary.getGenres().getFirst().getId());
+    assertEquals("Fiction", summary.getGenres().getFirst().getName());
   }
 
   @Test
@@ -99,8 +104,9 @@ class BookServiceTest {
     assertEquals(book.getIsbn(), result.getIsbn());
     assertEquals(book.getDescription(), result.getDescription());
     assertEquals(book.getPublishDate(), result.getPublishDate());
-    assertNotNull(result.getGenre());
-    assertEquals(genreId, result.getGenre().getId());
+    assertNotNull(result.getGenres());
+    assertEquals(1, result.getGenres().size());
+    assertEquals(genreId, result.getGenres().getFirst().getId());
     assertNotNull(result.getAuthors());
     assertEquals(1, result.getAuthors().size());
     assertEquals(authorId, result.getAuthors().getFirst().getId());
@@ -134,8 +140,9 @@ class BookServiceTest {
     assertEquals(createBookDTO.getIsbn(), result.getIsbn());
     assertEquals(createBookDTO.getDescription(), result.getDescription());
     assertEquals(createBookDTO.getPublishDate(), result.getPublishDate());
-    assertNotNull(result.getGenre());
-    assertEquals(genreId, result.getGenre().getId());
+    assertNotNull(result.getGenres());
+    assertEquals(1, result.getGenres().size());
+    assertEquals(genreId, result.getGenres().getFirst().getId());
     assertNotNull(result.getAuthors());
     assertEquals(1, result.getAuthors().size());
     assertEquals(authorId, result.getAuthors().getFirst().getId());
@@ -175,7 +182,7 @@ class BookServiceTest {
     updateDTO.setIsbn("9781111111111");
     updateDTO.setDescription("Updated description");
     updateDTO.setPublishDate(LocalDate.of(2025, 1, 1));
-    updateDTO.setGenreId(genreId);
+    updateDTO.setGenreIds(List.of(genreId));
     updateDTO.setAuthorIds(List.of(authorId));
 
     when(bookRepository.findById(book.getId())).thenReturn(Optional.of(book));
@@ -198,7 +205,7 @@ class BookServiceTest {
     updateDTO.setIsbn("9789999999999");
     updateDTO.setTitle("Title");
     updateDTO.setPublishDate(LocalDate.now());
-    updateDTO.setGenreId(genreId);
+    updateDTO.setGenreIds(List.of(genreId));
     updateDTO.setAuthorIds(List.of(authorId));
 
     when(bookRepository.findById(book.getId())).thenReturn(Optional.of(book));
@@ -215,7 +222,7 @@ class BookServiceTest {
     updateDTO.setIsbn(book.getIsbn());
     updateDTO.setTitle("Updated Title");
     updateDTO.setPublishDate(LocalDate.now());
-    updateDTO.setGenreId(genreId);
+    updateDTO.setGenreIds(List.of(genreId));
     updateDTO.setAuthorIds(List.of(authorId));
 
     when(bookRepository.findById(book.getId())).thenReturn(Optional.of(book));

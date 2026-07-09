@@ -17,7 +17,8 @@ public interface BookRepository extends JpaRepository<Book, UUID> {
   @Query(
       """
       SELECT b FROM Book b
-      WHERE (CAST(:genreId as uuid)  IS NULL OR b.genre.id = :genreId)
+      WHERE (CAST(:genreId as uuid)  IS NULL OR EXISTS (
+              SELECT 1 FROM Genre g JOIN g.books bg WHERE b.id = bg.id AND g.id = :genreId))
         AND (CAST(:authorId as uuid) IS NULL OR EXISTS (
               SELECT 1 FROM Author a JOIN a.books ab WHERE ab.id = b.id AND a.id = :authorId))
         AND (CAST(:search AS string)   IS NULL OR

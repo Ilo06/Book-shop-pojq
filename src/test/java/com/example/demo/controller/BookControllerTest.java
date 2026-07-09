@@ -10,11 +10,14 @@ import com.example.demo.dto.request.CreateBookDTO;
 import com.example.demo.dto.response.AuthorResponse;
 import com.example.demo.dto.response.BookResponse;
 import com.example.demo.dto.response.BookSummaryResponse;
+import com.example.demo.dto.response.CopyStockResponse;
 import com.example.demo.dto.response.GenreResponse;
+import com.example.demo.dto.response.StockResponse;
 import com.example.demo.endpoint.rest.controller.bookshop.BookController;
 import com.example.demo.entity.Author;
 import com.example.demo.entity.Book;
 import com.example.demo.entity.Genre;
+import com.example.demo.entity.enums.BookCopyType;
 import com.example.demo.exception.GlobalExceptionHandler;
 import com.example.demo.exception.ResourceConflictException;
 import com.example.demo.exception.ResourceNotFoundException;
@@ -71,7 +74,7 @@ class BookControllerTest {
             .isbn("1234567891234")
             .description("A book description")
             .publishDate(LocalDate.now())
-            .genre(genre)
+            .genres(List.of(genre))
             .authors(List.of(author))
             .build();
   }
@@ -85,7 +88,7 @@ class BookControllerTest {
             .isbn(book.getIsbn())
             .description(book.getDescription())
             .publishDate(book.getPublishDate())
-            .genre(genreResponse)
+            .genres(List.of(genreResponse))
             .authors(List.of(authorResponse))
             .build();
 
@@ -125,7 +128,7 @@ class BookControllerTest {
             .id(book.getId())
             .title(book.getTitle())
             .isbn(book.getIsbn())
-            .genre(genreResponse)
+            .genres(List.of(genreResponse))
             .build();
 
     when(bookService.findAll(null, null, null)).thenReturn(List.of(summary));
@@ -145,7 +148,7 @@ class BookControllerTest {
     input.setIsbn("9789999999999");
     input.setDescription("A new book description");
     input.setPublishDate(LocalDate.of(2026, 6, 1));
-    input.setGenreId(genre.getId());
+    input.setGenreIds(List.of(genre.getId()));
     input.setAuthorIds(List.of(author.getId()));
 
     BookResponse response =
@@ -155,7 +158,7 @@ class BookControllerTest {
             .isbn(input.getIsbn())
             .description(input.getDescription())
             .publishDate(input.getPublishDate())
-            .genre(genreResponse)
+            .genres(List.of(genreResponse))
             .authors(List.of(authorResponse))
             .build();
 
@@ -192,7 +195,7 @@ class BookControllerTest {
     input.setTitle("New Book");
     input.setIsbn("9788888888888");
     input.setPublishDate(LocalDate.of(2026, 6, 1));
-    input.setGenreId(genre.getId());
+    input.setGenreIds(List.of(genre.getId()));
     input.setAuthorIds(List.of(author.getId()));
 
     when(bookService.create(any(CreateBookDTO.class)))
@@ -215,7 +218,7 @@ class BookControllerTest {
     input.setIsbn("9787777777777");
     input.setDescription("Updated description");
     input.setPublishDate(LocalDate.of(2026, 7, 1));
-    input.setGenreId(genre.getId());
+    input.setGenreIds(List.of(genre.getId()));
     input.setAuthorIds(List.of(author.getId()));
 
     BookResponse response =
@@ -225,7 +228,7 @@ class BookControllerTest {
             .isbn(input.getIsbn())
             .description(input.getDescription())
             .publishDate(input.getPublishDate())
-            .genre(genreResponse)
+            .genres(List.of(genreResponse))
             .authors(List.of(authorResponse))
             .build();
 
@@ -249,7 +252,7 @@ class BookControllerTest {
     input.setTitle("Updated Book");
     input.setIsbn("9786666666666");
     input.setPublishDate(LocalDate.of(2026, 7, 1));
-    input.setGenreId(genre.getId());
+    input.setGenreIds(List.of(genre.getId()));
     input.setAuthorIds(List.of(author.getId()));
 
     when(bookService.update(eq(id), any(CreateBookDTO.class)))
@@ -280,5 +283,78 @@ class BookControllerTest {
         .delete(id);
 
     mockMvc.perform(delete("/books/{bookId}", id)).andExpect(status().isNotFound());
+  }
+
+  @Test
+  void getBookStock_shouldReturn200_whenNotDetailed() throws Exception {
+    when(bookService.getStock(book.getId())).thenReturn(7);
+
+    mockMvc
+        .perform(get("/books/{bookId}/stock", book.getId()).accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().string("7"));
+  }
+
+  @Test
+  void getBookStock_shouldReturn404() throws Exception {
+    UUID id = UUID.randomUUID();
+    when(bookService.getStock(id)).thenThrow(new ResourceNotFoundException("Book not found"));
+
+    mockMvc
+        .perform(get("/books/{bookId}/stock", id).accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void getBookStock_shouldReturnDetailed_whenDetailed() throws Exception {
+    CopyStockResponse response =
+        CopyStockResponse.builder()
+            .bookId(book.getId())
+            .type(BookCopyType.PAPERBACK)
+            .availableCopies(5L)
+            .build();
+    when(bookService.getDetailedStock(book.getId())).thenReturn(List.of(response));
+
+    mockMvc
+        .perform(
+            get("/books/{bookId}/stock", book.getId())
+                .param("detailed", "true")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].type").value("PAPERBACK"))
+        .andExpect(jsonPath("$[0].availableCopies").value(5));
+  }
+
+  @Test
+  void getAllBooksStock_shouldReturn200() throws Exception {
+    StockResponse response =
+        StockResponse.builder()
+            .bookId(book.getId())
+            .title(book.getTitle())
+            .availableCopies(7L)
+            .build();
+    when(bookService.getBooksInStock()).thenReturn(List.of(response));
+
+    mockMvc
+        .perform(get("/books/stock").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].bookId").value(book.getId().toString()))
+        .andExpect(jsonPath("$[0].availableCopies").value(7));
+  }
+
+  @Test
+  void getLowStockBooks_shouldReturn200() throws Exception {
+    StockResponse response =
+        StockResponse.builder()
+            .bookId(book.getId())
+            .title(book.getTitle())
+            .availableCopies(1L)
+            .build();
+    when(bookService.getLowStock()).thenReturn(List.of(response));
+
+    mockMvc
+        .perform(get("/books/stock/low-stock").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].availableCopies").value(1));
   }
 }

@@ -1,9 +1,6 @@
 package com.example.demo.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -28,7 +25,7 @@ public class CreateBookDTO {
 
   @NotNull private LocalDate publishDate;
 
-  @NotNull private UUID genreId;
+  @NotEmpty private List<UUID> genreIds;
 
-  @NotNull private List<UUID> authorIds;
+  @NotEmpty private List<UUID> authorIds;
 }

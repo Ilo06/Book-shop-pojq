@@ -1,16 +1,14 @@
 package com.example.demo.service;
 
 import com.example.demo.dto.request.CreateBookDTO;
-import com.example.demo.dto.response.AuthorResponse;
-import com.example.demo.dto.response.BookResponse;
-import com.example.demo.dto.response.BookSummaryResponse;
-import com.example.demo.dto.response.GenreResponse;
+import com.example.demo.dto.response.*;
 import com.example.demo.entity.Author;
 import com.example.demo.entity.Book;
 import com.example.demo.entity.Genre;
 import com.example.demo.exception.ResourceConflictException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.bookshop.AuthorRepository;
+import com.example.demo.repository.bookshop.BookCopyRepository;
 import com.example.demo.repository.bookshop.BookRepository;
 import com.example.demo.repository.bookshop.GenreRepository;
 import java.util.ArrayList;
@@ -28,6 +26,7 @@ public class BookService {
   private final BookRepository bookRepository;
   private final GenreRepository genreRepository;
   private final AuthorRepository authorRepository;
+  private final BookCopyRepository bookCopyRepository;
 
   public List<BookSummaryResponse> findAll(UUID genreId, UUID authorId, String search) {
     List<Book> books =
@@ -47,7 +46,8 @@ public class BookService {
       throw new ResourceConflictException(
           "Book with ISBN '" + input.getIsbn() + "' already exists");
     }
-    Genre genre = getGenreOrThrow(input.getGenreId());
+    List<Genre> genres = new ArrayList<>();
+    input.getGenreIds().stream().distinct().forEach(id -> genres.add(getGenreOrThrow(id)));
     List<Author> authors = resolveAuthors(input.getAuthorIds());
 
     Book book =
@@ -56,7 +56,7 @@ public class BookService {
             .isbn(input.getIsbn())
             .description(input.getDescription())
             .publishDate(input.getPublishDate())
-            .genre(genre)
+            .genres(genres)
             .authors(authors)
             .build();
 
@@ -72,14 +72,17 @@ public class BookService {
           "Book with ISBN '" + input.getIsbn() + "' already exists");
     }
 
-    Genre genre = getGenreOrThrow(input.getGenreId());
+    List<Genre> genres = new ArrayList<>();
+    input.getGenreIds().stream()
+        .distinct()
+        .forEach(genreId -> genres.add(getGenreOrThrow(genreId)));
     List<Author> authors = resolveAuthors(input.getAuthorIds());
 
     book.setTitle(input.getTitle());
     book.setIsbn(input.getIsbn());
     book.setDescription(input.getDescription());
     book.setPublishDate(input.getPublishDate());
-    book.setGenre(genre);
+    book.setGenres(genres);
     book.setAuthors(authors);
 
     return toResponse(bookRepository.save(book));
@@ -89,6 +92,46 @@ public class BookService {
   public void delete(UUID id) {
     Book book = getOrThrow(id);
     bookRepository.delete(book);
+  }
+
+  public Integer getStock(UUID id) {
+    return bookCopyRepository.getBookStock(id);
+  }
+
+  public List<CopyStockResponse> getDetailedStock(UUID bookId) {
+    return bookCopyRepository.getDetailedBookStock(bookId).stream()
+        .map(
+            csp ->
+                CopyStockResponse.builder()
+                    .bookId(bookId)
+                    .type(csp.getType())
+                    .availableCopies(csp.getAvailableCopies())
+                    .build())
+        .toList();
+  }
+
+  public List<StockResponse> getBooksInStock() {
+    return bookCopyRepository.getAllBooksStock().stream()
+        .map(
+            p ->
+                StockResponse.builder()
+                    .bookId(p.getBookId())
+                    .title(p.getTitle())
+                    .availableCopies(p.getAvailableCopies())
+                    .build())
+        .toList();
+  }
+
+  public List<StockResponse> getLowStock() {
+    return bookCopyRepository.findLowStockBooks().stream()
+        .map(
+            p ->
+                StockResponse.builder()
+                    .bookId(p.getBookId())
+                    .title(p.getTitle())
+                    .availableCopies(p.getAvailableCopies())
+                    .build())
+        .toList();
   }
 
   public Book getOrThrow(UUID id) {
@@ -108,6 +151,7 @@ public class BookService {
       return new ArrayList<>();
     }
     return authorIds.stream()
+        .distinct()
         .map(
             aId ->
                 authorRepository
@@ -122,13 +166,12 @@ public class BookService {
         .id(book.getId())
         .title(book.getTitle())
         .isbn(book.getIsbn())
-        .genre(
-            book.getGenre() != null
-                ? GenreResponse.builder()
-                    .id(book.getGenre().getId())
-                    .name(book.getGenre().getName())
-                    .build()
-                : null)
+        .genres(
+            book.getGenres().stream()
+                .map(
+                    genre ->
+                        GenreResponse.builder().id(genre.getId()).name(genre.getName()).build())
+                .toList())
         .build();
   }
 
@@ -139,13 +182,12 @@ public class BookService {
         .isbn(book.getIsbn())
         .description(book.getDescription())
         .publishDate(book.getPublishDate())
-        .genre(
-            book.getGenre() != null
-                ? GenreResponse.builder()
-                    .id(book.getGenre().getId())
-                    .name(book.getGenre().getName())
-                    .build()
-                : null)
+        .genres(
+            book.getGenres().stream()
+                .map(
+                    genre ->
+                        GenreResponse.builder().id(genre.getId()).name(genre.getName()).build())
+                .toList())
         .authors(
             book.getAuthors() != null
                 ? book.getAuthors().stream()
