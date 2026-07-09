@@ -11,6 +11,7 @@ import com.example.demo.repository.bookshop.AuthorRepository;
 import com.example.demo.repository.bookshop.BookCopyRepository;
 import com.example.demo.repository.bookshop.BookRepository;
 import com.example.demo.repository.bookshop.GenreRepository;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -94,12 +95,12 @@ public class BookService {
     bookRepository.delete(book);
   }
 
-  public Integer getStock(UUID id) {
-    return bookCopyRepository.getBookStock(id);
+  public Integer getStock(UUID id, Instant t) {
+    return bookCopyRepository.getBookStock(id, t);
   }
 
-  public List<CopyStockResponse> getDetailedStock(UUID bookId) {
-    return bookCopyRepository.getDetailedBookStock(bookId).stream()
+  public List<CopyStockResponse> getDetailedStock(UUID bookId, Instant t) {
+    return bookCopyRepository.getDetailedBookStock(bookId, t).stream()
         .map(
             csp ->
                 CopyStockResponse.builder()
@@ -110,8 +111,8 @@ public class BookService {
         .toList();
   }
 
-  public List<StockResponse> getBooksInStock() {
-    return bookCopyRepository.getAllBooksStock().stream()
+  public List<StockResponse> getBooksInStock(Instant t) {
+    return bookCopyRepository.getAllBooksStock(t).stream()
         .map(
             p ->
                 StockResponse.builder()
@@ -122,8 +123,8 @@ public class BookService {
         .toList();
   }
 
-  public List<StockResponse> getLowStock() {
-    return bookCopyRepository.findLowStockBooks().stream()
+  public List<StockResponse> getLowStock(Instant t) {
+    return bookCopyRepository.findLowStockBooks(t).stream()
         .map(
             p ->
                 StockResponse.builder()

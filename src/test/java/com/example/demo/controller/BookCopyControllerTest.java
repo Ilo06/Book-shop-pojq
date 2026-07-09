@@ -18,6 +18,7 @@ import com.example.demo.service.BookCopyService;
 import com.example.demo.service.BookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -192,7 +193,7 @@ class BookCopyControllerTest {
 
   @Test
   void getBookCopyStock_shouldReturn200() throws Exception {
-    when(bookCopyService.getStockByCopyId(copyId)).thenReturn(5);
+    when(bookCopyService.getStockByCopyId(eq(copyId), any(Instant.class))).thenReturn(5);
 
     mockMvc
         .perform(

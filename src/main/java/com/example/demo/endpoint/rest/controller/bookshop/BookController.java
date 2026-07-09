@@ -5,6 +5,7 @@ import com.example.demo.dto.response.BookResponse;
 import com.example.demo.dto.response.BookSummaryResponse;
 import com.example.demo.service.BookService;
 import jakarta.validation.Valid;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -60,23 +61,28 @@ public class BookController {
   @GetMapping("/{bookId}/stock")
   public ResponseEntity<?> findAvailableCopiesPerBook(
       @PathVariable UUID bookId,
+      @RequestParam(required = false) Instant t,
       @RequestParam(required = false, defaultValue = "false") Boolean detailed) {
+    Instant time = (t != null) ? t : Instant.now();
     return ResponseEntity.status(HttpStatus.OK)
         .header("Content-Type", "application/json")
-        .body(detailed ? bookService.getDetailedStock(bookId) : bookService.getStock(bookId));
+        .body(
+            detailed
+                ? bookService.getDetailedStock(bookId, time)
+                : bookService.getStock(bookId, time));
   }
 
   @GetMapping("/stock")
-  public ResponseEntity<?> getAllBooksStock() {
+  public ResponseEntity<?> getAllBooksStock(@RequestParam(required = false) Instant t) {
     return ResponseEntity.status(HttpStatus.OK)
         .header("Content-Type", "application/json")
-        .body(bookService.getBooksInStock());
+        .body(bookService.getBooksInStock((t != null) ? t : Instant.now()));
   }
 
   @GetMapping("/stock/low-stock")
-  public ResponseEntity<?> findLowStockBooks() {
+  public ResponseEntity<?> findLowStockBooks(@RequestParam(required = false) Instant t) {
     return ResponseEntity.status(HttpStatus.OK)
         .header("Content-Type", "application/json")
-        .body(bookService.getLowStock());
+        .body(bookService.getLowStock((t != null) ? t : Instant.now()));
   }
 }

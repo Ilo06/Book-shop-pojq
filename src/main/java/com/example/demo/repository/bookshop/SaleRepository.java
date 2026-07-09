@@ -3,6 +3,7 @@ package com.example.demo.repository.bookshop;
 import com.example.demo.entity.Sale;
 import com.example.demo.repository.projection.TopSellerProjection;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,22 +18,22 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
 
   @Query(
       """
-      SELECT s FROM Sale s
-      WHERE EXTRACT(YEAR  FROM s.finalizationDateTime) = EXTRACT(YEAR  FROM CURRENT_DATE)
-        AND EXTRACT(MONTH FROM s.finalizationDateTime) = EXTRACT(MONTH FROM CURRENT_DATE)
-        AND EXTRACT(DAY FROM s.finalizationDateTime) = EXTRACT(DAY FROM CURRENT_DATE)
-        AND s.status = 'CONFIRMED'
-      """)
-  List<Sale> findTodaySale();
+SELECT s FROM Sale s
+WHERE EXTRACT(YEAR  FROM s.finalizationDateTime) = EXTRACT(YEAR  FROM CAST(:date AS date))
+  AND EXTRACT(MONTH FROM s.finalizationDateTime) = EXTRACT(MONTH FROM CAST(:date AS date))
+  AND EXTRACT(DAY FROM s.finalizationDateTime) = EXTRACT(DAY FROM CAST(:date AS date))
+  AND s.status = 'CONFIRMED'
+""")
+  List<Sale> findSaleByDay(@Param("date") LocalDate date);
 
   @Query(
       """
-      SELECT s FROM Sale s
-      WHERE EXTRACT(YEAR  FROM s.finalizationDateTime) = EXTRACT(YEAR  FROM CURRENT_DATE)
-        AND EXTRACT(MONTH FROM s.finalizationDateTime) = EXTRACT(MONTH FROM CURRENT_DATE)
-        AND s.status = 'CONFIRMED'
-      """)
-  List<Sale> findMonthlySale();
+SELECT s FROM Sale s
+WHERE EXTRACT(YEAR  FROM s.finalizationDateTime) = EXTRACT(YEAR  FROM CAST(:date AS date))
+  AND EXTRACT(MONTH FROM s.finalizationDateTime) = EXTRACT(MONTH FROM CAST(:date AS date))
+  AND s.status = 'CONFIRMED'
+""")
+  List<Sale> findSaleByMonth(@Param("date") LocalDate date);
 
   @Query(
       """
