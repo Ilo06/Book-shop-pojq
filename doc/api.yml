@@ -327,7 +327,16 @@ paths:
       parameters:
         - name: detailed
           in: query
-          schema: { type: boolean, default: false }
+          schema:
+            type: boolean
+            default: false
+        - name: t
+          required: false
+          in: query
+          schema:
+            type: string
+            format: date-time
+            example: '2026-07-08T12:00:00.000Z'
       responses:
         '200':
           description: OK
@@ -346,6 +355,14 @@ paths:
       tags: [books]
       summary: Stock de tous les livres
       operationId: getAllBooksStock
+      parameters:
+        - name: t
+          required: false
+          in: query
+          schema:
+            type: string
+            format: date-time
+            example: '2026-07-08T12:00:00.000Z'
       responses:
         '200':
           description: OK
@@ -361,6 +378,14 @@ paths:
       tags: [books]
       summary: Livres avec stock ≤ 3
       operationId: getLowStockBooks
+      parameters:
+        - name: t
+          required: false
+          in: query
+          schema:
+            type: string
+            format: date-time
+            example: '2026-07-08T12:00:00.000Z'
       responses:
         '200':
           description: OK
@@ -468,8 +493,16 @@ paths:
       - $ref: '#/components/parameters/copyId'
     get:
       tags: [book-copies]
-      summary: Stock disponible d'un exemplaire spécifique
+      summary: Stock disponible d'un exemplaire spécifique à un instant spécifié
       operationId: getBookCopyStock
+      parameters:
+        - name: t
+          required: false
+          in: query
+          schema:
+            type: string
+            format: date-time
+            example: '2026-07-08T12:00:00.000Z'
       responses:
         '200':
           description: OK
@@ -627,6 +660,7 @@ paths:
           schema:
             type: string
             format: date
+            example: '2026-07-08'
       responses:
         '200':
           description: OK
@@ -647,6 +681,7 @@ paths:
           schema:
             type: string
             format: date
+            example: '2026-07-08'
       responses:
         '200':
           description: OK

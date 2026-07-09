@@ -57,9 +57,11 @@ public class SaleService {
       if (bookCopyRepository.findById(qbcId).isEmpty()) {
         throw new ResourceNotFoundException("Book copy with id: " + qbcId + " not found");
       }
-      if ((bookCopyRepository.getBookCopyStockByCopyId(qbcId) - qdcMap.get(qbcId).getQuantity())
+      if ((bookCopyRepository.getBookCopyStockByCopyId(qbcId, sale.getCreationDateTime())
+              - qdcMap.get(qbcId).getQuantity())
           < 0) {
-        throw new BadRequestException("Requested amount exceed remaining stock");
+        throw new BadRequestException(
+            "Requested amount exceed remaining stock at the specified sale date");
       }
     }
 

@@ -6,6 +6,7 @@ import com.example.demo.dto.response.BookCopyResponse;
 import com.example.demo.service.BookCopyService;
 import com.example.demo.service.BookService;
 import jakarta.validation.Valid;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -63,9 +64,10 @@ public class BookCopyController {
   }
 
   @GetMapping("/{copyId}/stock")
-  public ResponseEntity<?> getBookCopyStock(@PathVariable UUID copyId) {
+  public ResponseEntity<?> getBookCopyStock(
+      @PathVariable UUID copyId, @RequestParam(required = false) Instant t) {
     return ResponseEntity.status(HttpStatus.OK)
         .header("Content-Type", "application/json")
-        .body(bookCopyService.getStockByCopyId(copyId));
+        .body(bookCopyService.getStockByCopyId(copyId, (t != null) ? t : Instant.now()));
   }
 }

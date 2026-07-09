@@ -123,7 +123,8 @@ class SaleServiceTest {
     createSaleDTO.setIsReservation(false);
 
     when(bookCopyRepository.findById(bookCopyId)).thenReturn(Optional.of(bookCopy));
-    when(bookCopyRepository.getBookCopyStockByCopyId(bookCopyId)).thenReturn(2);
+    when(bookCopyRepository.getBookCopyStockByCopyId(eq(bookCopyId), any(Instant.class)))
+        .thenReturn(2);
     when(saleRepository.save(any(Sale.class)))
         .thenAnswer(
             invocation -> {

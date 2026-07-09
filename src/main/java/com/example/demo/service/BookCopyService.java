@@ -90,8 +90,8 @@ public class BookCopyService {
     bookCopyRepository.delete(copy);
   }
 
-  public Integer getStockByCopyId(UUID copyId) {
-    return bookCopyRepository.getBookCopyStockByCopyId(copyId);
+  public Integer getStockByCopyId(UUID copyId, Instant t) {
+    return bookCopyRepository.getBookCopyStockByCopyId(copyId, t);
   }
 
   public BookCopy getOrThrow(UUID id) {
