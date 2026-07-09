@@ -1,10 +1,10 @@
 package com.example.demo.dto.request;
 
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.jetbrains.annotations.NotNull;
 
 @Data
 @AllArgsConstructor
