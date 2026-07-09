@@ -24,6 +24,7 @@ import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.service.BookCopyService;
 import com.example.demo.service.BookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -287,10 +288,13 @@ class BookControllerTest {
 
   @Test
   void getBookStock_shouldReturn200_whenNotDetailed() throws Exception {
-    when(bookService.getStock(book.getId())).thenReturn(7);
+    Instant now = Instant.now();
+    when(bookService.getStock(book.getId(), now)).thenReturn(7);
 
     mockMvc
-        .perform(get("/books/{bookId}/stock", book.getId()).accept(MediaType.APPLICATION_JSON))
+        .perform(
+            get("/books/{bookId}/stock?t=%s".formatted(now), book.getId())
+                .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().string("7"));
   }
@@ -298,10 +302,12 @@ class BookControllerTest {
   @Test
   void getBookStock_shouldReturn404() throws Exception {
     UUID id = UUID.randomUUID();
-    when(bookService.getStock(id)).thenThrow(new ResourceNotFoundException("Book not found"));
+    Instant now = Instant.now();
+    when(bookService.getStock(id, now)).thenThrow(new ResourceNotFoundException("Book not found"));
 
     mockMvc
-        .perform(get("/books/{bookId}/stock", id).accept(MediaType.APPLICATION_JSON))
+        .perform(
+            get("/books/{bookId}/stock?t=%s".formatted(now), id).accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound());
   }
 
@@ -313,11 +319,12 @@ class BookControllerTest {
             .type(BookCopyType.PAPERBACK)
             .availableCopies(5L)
             .build();
-    when(bookService.getDetailedStock(book.getId())).thenReturn(List.of(response));
+    Instant now = Instant.now();
+    when(bookService.getDetailedStock(book.getId(), now)).thenReturn(List.of(response));
 
     mockMvc
         .perform(
-            get("/books/{bookId}/stock", book.getId())
+            get("/books/{bookId}/stock?t=%s".formatted(now), book.getId())
                 .param("detailed", "true")
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
@@ -333,10 +340,11 @@ class BookControllerTest {
             .title(book.getTitle())
             .availableCopies(7L)
             .build();
-    when(bookService.getBooksInStock()).thenReturn(List.of(response));
+    Instant now = Instant.now();
+    when(bookService.getBooksInStock(now)).thenReturn(List.of(response));
 
     mockMvc
-        .perform(get("/books/stock").accept(MediaType.APPLICATION_JSON))
+        .perform(get("/books/stock?t=%s".formatted(now)).accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].bookId").value(book.getId().toString()))
         .andExpect(jsonPath("$[0].availableCopies").value(7));
@@ -350,7 +358,7 @@ class BookControllerTest {
             .title(book.getTitle())
             .availableCopies(1L)
             .build();
-    when(bookService.getLowStock()).thenReturn(List.of(response));
+    when(bookService.getLowStock(any(Instant.class))).thenReturn(List.of(response));
 
     mockMvc
         .perform(get("/books/stock/low-stock").accept(MediaType.APPLICATION_JSON))

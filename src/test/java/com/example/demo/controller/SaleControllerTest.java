@@ -18,6 +18,7 @@ import com.example.demo.service.SaleService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -157,22 +158,24 @@ class SaleControllerTest {
 
   @Test
   void todayRevenue_shouldReturn200() throws Exception {
-    when(saleService.getTodayRevenue())
+    LocalDate now = LocalDate.now();
+    when(saleService.getTodayRevenue(now))
         .thenReturn(new RevenueResponse.TodayRevenue(BigDecimal.valueOf(250.00)));
 
     mockMvc
-        .perform(get("/sales/today-revenue").accept(MediaType.APPLICATION_JSON))
+        .perform(get("/sales/day-revenue?t=%s".formatted(now)).accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.todayRevenue").value(250.00));
   }
 
   @Test
   void monthlyRevenue_shouldReturn200() throws Exception {
-    when(saleService.getMonthlyRevenue())
+    LocalDate now = LocalDate.now();
+    when(saleService.getMonthlyRevenue(now))
         .thenReturn(new RevenueResponse.MonthlyRevenue(BigDecimal.valueOf(5000.00)));
 
     mockMvc
-        .perform(get("/sales/monthly-revenue").accept(MediaType.APPLICATION_JSON))
+        .perform(get("/sales/month-revenue?t=%s".formatted(now)).accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.monthlyRevenue").value(5000.00));
   }

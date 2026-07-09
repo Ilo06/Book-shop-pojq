@@ -4,6 +4,7 @@ import com.example.demo.entity.BookCopy;
 import com.example.demo.entity.enums.BookCopyType;
 import com.example.demo.repository.projection.CopyStockProjection;
 import com.example.demo.repository.projection.StockProjection;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,16 +25,16 @@ public interface BookCopyRepository extends JpaRepository<BookCopy, UUID> {
   FROM Book b
   LEFT JOIN (SELECT sbc.bookCopy.book.id AS ts_bookId, COALESCE(SUM(sbc.quantity), 0) AS sold
           FROM SaleBookCopy AS sbc
-          WHERE CAST(sbc.sale.finalizationDateTime AS timestamp) <= current_timestamp
+          WHERE CAST(sbc.sale.finalizationDateTime AS timestamp) <= CAST(:datetime AS timestamp)
             AND sbc.sale.status = 'CONFIRMED'
           GROUP BY sbc.bookCopy.book.id) ts ON ts.ts_bookId = b.id
   LEFT JOIN (SELECT ab.bookCopy.book.id AS ta_bookId, COALESCE(SUM(ab.quantity), 0) AS arrival
           FROM ArrivalBook AS ab
-          WHERE CAST(ab.arrival.arrivalDateTime AS timestamp) <= current_timestamp
+          WHERE CAST(ab.arrival.arrivalDateTime AS timestamp) <= CAST(:datetime AS timestamp)
           GROUP BY ab.bookCopy.book.id) ta ON ta.ta_bookId = b.id
   GROUP BY b.id, b.title
 """)
-  List<StockProjection> getAllBooksStock();
+  List<StockProjection> getAllBooksStock(@Param("datetime") Instant datetime);
 
   @Query(
       """
@@ -42,15 +43,15 @@ FROM
     (SELECT COALESCE(SUM(sbc.quantity), 0) AS sold
       FROM SaleBookCopy AS sbc
       WHERE sbc.bookCopy.book.id = :bookId
-        AND CAST(sbc.sale.finalizationDateTime AS timestamp) <= current_timestamp
+        AND CAST(sbc.sale.finalizationDateTime AS timestamp) <= CAST(:datetime AS timestamp)
         AND sbc.sale.status = 'CONFIRMED'),
     (SELECT COALESCE(SUM(ab.quantity), 0) AS arrival
       FROM ArrivalBook AS ab
       JOIN ab.bookCopy AS bc
       WHERE bc.book.id = :bookId
-        AND CAST(ab.arrival.arrivalDateTime AS timestamp) <= current_timestamp)
+        AND CAST(ab.arrival.arrivalDateTime AS timestamp) <= CAST(:datetime AS timestamp))
 """)
-  Integer getBookStock(@Param("bookId") UUID bookId);
+  Integer getBookStock(@Param("bookId") UUID bookId, @Param("datetime") Instant datetime);
 
   @Query(
       """
@@ -58,17 +59,18 @@ SELECT COALESCE(ta.ta_type, ts.ts_type) AS type, SUM(COALESCE(ta.arrival, 0) - C
 FROM (SELECT sbc.bookCopy.type AS ts_type, COALESCE(SUM(sbc.quantity), 0) AS sold
         FROM SaleBookCopy AS sbc
         WHERE sbc.bookCopy.book.id = :bookId
-            AND CAST(sbc.sale.finalizationDateTime AS timestamp) <= current_timestamp
+            AND CAST(sbc.sale.finalizationDateTime AS timestamp) <= CAST(:datetime AS timestamp)
             AND sbc.sale.status = 'CONFIRMED'
         GROUP BY sbc.bookCopy.type) AS ts
 FULL OUTER JOIN (SELECT ab.bookCopy.type AS ta_type, COALESCE(SUM(ab.quantity), 0) AS arrival
         FROM ArrivalBook AS ab
         WHERE ab.bookCopy.book.id = :bookId
-            AND CAST(ab.arrival.arrivalDateTime AS timestamp) <= current_timestamp
+            AND CAST(ab.arrival.arrivalDateTime AS timestamp) <= CAST(:datetime AS timestamp)
         GROUP BY ab.bookCopy.type) AS ta ON ts.ts_type = ta.ta_type
 GROUP BY COALESCE(ta.ta_type, ts.ts_type)
 """)
-  List<CopyStockProjection> getDetailedBookStock(@Param("bookId") UUID bookId);
+  List<CopyStockProjection> getDetailedBookStock(
+      @Param("bookId") UUID bookId, @Param("datetime") Instant datetime);
 
   @Query(
       """
@@ -78,17 +80,19 @@ FROM
         FROM SaleBookCopy AS sbc
         WHERE sbc.bookCopy.book.id = :bookId
             AND sbc.bookCopy.type = :copyType
-            AND CAST(sbc.sale.finalizationDateTime AS timestamp) <= current_timestamp
+            AND CAST(sbc.sale.finalizationDateTime AS timestamp) <= CAST(:datetime AS timestamp)
             AND sbc.sale.status = 'CONFIRMED'),
     (SELECT COALESCE(SUM(ab.quantity), 0) AS arrival
         FROM ArrivalBook AS ab
         JOIN ab.bookCopy AS bc
         WHERE bc.book.id = :bookId
             AND bc.type = :copyType
-            AND CAST(ab.arrival.arrivalDateTime AS timestamp) <= current_timestamp)
+            AND CAST(ab.arrival.arrivalDateTime AS timestamp) <= CAST(:datetime AS timestamp))
 """)
   Integer getBookCopyStockByType(
-      @Param("bookId") UUID bookId, @Param("copyType") BookCopyType copyType);
+      @Param("bookId") UUID bookId,
+      @Param("copyType") BookCopyType copyType,
+      @Param("datetime") Instant datetime);
 
   @Query(
       """
@@ -97,14 +101,15 @@ FROM
     (SELECT COALESCE(SUM(sbc.quantity), 0) AS sold
         FROM SaleBookCopy AS sbc
         WHERE sbc.bookCopy.id = :copyId
-            AND CAST(sbc.sale.finalizationDateTime AS timestamp) <= current_timestamp
+            AND CAST(sbc.sale.finalizationDateTime AS timestamp) <= CAST(:datetime AS timestamp)
             AND sbc.sale.status = 'CONFIRMED'),
     (SELECT COALESCE(SUM(ab.quantity), 0) AS arrival
         FROM ArrivalBook AS ab
         WHERE ab.bookCopy.id = :copyId
-            AND CAST(ab.arrival.arrivalDateTime AS timestamp) <= current_timestamp)
+            AND CAST(ab.arrival.arrivalDateTime AS timestamp) <= CAST(:datetime AS timestamp))
 """)
-  Integer getBookCopyStockByCopyId(@Param("copyId") UUID copyId);
+  Integer getBookCopyStockByCopyId(
+      @Param("copyId") UUID copyId, @Param("datetime") Instant datetime);
 
   @Query(
       """
@@ -114,17 +119,17 @@ SELECT b.id            AS bookId,
 FROM Book b
 LEFT JOIN (SELECT sbc.bookCopy.book.id AS ts_bookId, COALESCE(SUM(sbc.quantity), 0) AS sold
         FROM SaleBookCopy AS sbc
-        WHERE CAST(sbc.sale.finalizationDateTime AS timestamp) <= current_timestamp
+        WHERE CAST(sbc.sale.finalizationDateTime AS timestamp) <= CAST(:datetime AS timestamp)
             AND sbc.sale.status = 'CONFIRMED'
         GROUP BY sbc.bookCopy.book.id) ts ON ts.ts_bookId = b.id
 LEFT JOIN (SELECT ab.bookCopy.book.id AS ta_bookId, COALESCE(SUM(ab.quantity), 0) AS arrival
         FROM ArrivalBook AS ab
-        WHERE CAST(ab.arrival.arrivalDateTime AS timestamp) <= current_timestamp
+        WHERE CAST(ab.arrival.arrivalDateTime AS timestamp) <= CAST(:datetime AS timestamp)
         GROUP BY ab.bookCopy.book.id) ta ON ta.ta_bookId = b.id
 GROUP BY b.id, b.title
 HAVING SUM(COALESCE(ta.arrival, 0) - COALESCE(ts.sold, 0)) <= 3
 """)
-  List<StockProjection> findLowStockBooks();
+  List<StockProjection> findLowStockBooks(@Param("datetime") Instant datetime);
 
   List<BookCopy> findAllByBookId(UUID bookId);
 }

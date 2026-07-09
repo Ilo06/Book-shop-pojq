@@ -16,6 +16,7 @@ import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.bookshop.BookCopyPriceRepository;
 import com.example.demo.repository.bookshop.BookCopyRepository;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -216,9 +217,9 @@ class BookCopyServiceTest {
 
   @Test
   void getStockByCopyId_shouldReturnStock() {
-    when(bookCopyRepository.getBookCopyStockByCopyId(copyId)).thenReturn(5);
+    when(bookCopyRepository.getBookCopyStockByCopyId(eq(copyId), any(Instant.class))).thenReturn(5);
 
-    Integer result = bookCopyService.getStockByCopyId(copyId);
+    Integer result = bookCopyService.getStockByCopyId(copyId, Instant.now());
 
     assertEquals(5, result);
   }

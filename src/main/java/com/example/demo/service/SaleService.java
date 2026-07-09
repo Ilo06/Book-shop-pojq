@@ -18,6 +18,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -56,9 +57,11 @@ public class SaleService {
       if (bookCopyRepository.findById(qbcId).isEmpty()) {
         throw new ResourceNotFoundException("Book copy with id: " + qbcId + " not found");
       }
-      if ((bookCopyRepository.getBookCopyStockByCopyId(qbcId) - qdcMap.get(qbcId).getQuantity())
+      if ((bookCopyRepository.getBookCopyStockByCopyId(qbcId, sale.getCreationDateTime())
+              - qdcMap.get(qbcId).getQuantity())
           < 0) {
-        throw new BadRequestException("Requested amount exceed remaining stock");
+        throw new BadRequestException(
+            "Requested amount exceed remaining stock at the specified sale date");
       }
     }
 
@@ -98,19 +101,19 @@ public class SaleService {
     return toResponse(saleRepository.save(sale));
   }
 
-  public RevenueResponse.TodayRevenue getTodayRevenue() {
+  public RevenueResponse.TodayRevenue getTodayRevenue(LocalDate t) {
     return RevenueResponse.TodayRevenue.builder()
         .todayRevenue(
-            saleRepository.findTodaySale().stream()
+            saleRepository.findSaleByDay(t).stream()
                 .map(this::getSaleRevenue)
                 .reduce(BigDecimal.ZERO, BigDecimal::add))
         .build();
   }
 
-  public RevenueResponse.MonthlyRevenue getMonthlyRevenue() {
+  public RevenueResponse.MonthlyRevenue getMonthlyRevenue(LocalDate t) {
     return RevenueResponse.MonthlyRevenue.builder()
         .monthlyRevenue(
-            saleRepository.findMonthlySale().stream()
+            saleRepository.findSaleByMonth(t).stream()
                 .map(this::getSaleRevenue)
                 .reduce(BigDecimal.ZERO, BigDecimal::add))
         .build();
