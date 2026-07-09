@@ -615,31 +615,45 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /sales/today-revenue:
+  /sales/day-revenue:
     get:
       tags: [sales]
-      summary: Chiffre d'affaires du jour (ventes confirmées)
-      operationId: getTodayRevenue
+      summary: Chiffre d'affaires du jour ou du jour spécifié (ventes confirmées)
+      operationId: getDayRevenue
+      parameters:
+        - name: t
+          required: false
+          in: query
+          schema:
+            type: string
+            format: date
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TodayRevenue'
+                $ref: '#/components/schemas/DayRevenue'
 
-  /sales/monthly-revenue:
+  /sales/month-revenue:
     get:
       tags: [sales]
-      summary: Chiffre d'affaires du mois en cours
-      operationId: getMonthlyRevenue
+      summary: Chiffre d'affaires du mois en cours ou du mois spécifié
+      operationId: getMonthRevenue
+      parameters:
+        - name: t
+          required: false
+          in: query
+          schema:
+            type: string
+            format: date
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MonthlyRevenue'
+                $ref: '#/components/schemas/MonthRevenue'
 
   /sales/top-sellers:
     get:
@@ -1067,14 +1081,14 @@ components:
           type: boolean
 
     # Dashboard / Revenue
-    TodayRevenue:
+    DayRevenue:
       type: object
       properties:
         todayRevenue:
           type: number
           format: double
 
-    MonthlyRevenue:
+    MonthRevenue:
       type: object
       properties:
         monthlyRevenue:

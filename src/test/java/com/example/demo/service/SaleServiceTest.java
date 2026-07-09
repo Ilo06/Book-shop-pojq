@@ -24,6 +24,7 @@ import com.example.demo.repository.bookshop.SaleRepository;
 import com.example.demo.repository.projection.TopSellerProjection;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -204,9 +205,10 @@ class SaleServiceTest {
 
   @Test
   void getTodayRevenue_shouldReturnRevenue() {
-    when(saleRepository.findTodaySale()).thenReturn(List.of(sale));
+    LocalDate now = LocalDate.now();
+    when(saleRepository.findSaleByDay(now)).thenReturn(List.of(sale));
 
-    RevenueResponse.TodayRevenue result = saleService.getTodayRevenue();
+    RevenueResponse.TodayRevenue result = saleService.getTodayRevenue(now);
 
     assertNotNull(result);
     assertNotNull(result.getTodayRevenue());
@@ -214,18 +216,20 @@ class SaleServiceTest {
 
   @Test
   void getTodayRevenue_shouldReturnZeroWhenNoSales() {
-    when(saleRepository.findTodaySale()).thenReturn(List.of());
+    LocalDate now = LocalDate.now();
+    when(saleRepository.findSaleByDay(now)).thenReturn(List.of());
 
-    RevenueResponse.TodayRevenue result = saleService.getTodayRevenue();
+    RevenueResponse.TodayRevenue result = saleService.getTodayRevenue(now);
 
     assertEquals(BigDecimal.ZERO, result.getTodayRevenue());
   }
 
   @Test
   void getMonthlyRevenue_shouldReturnRevenue() {
-    when(saleRepository.findMonthlySale()).thenReturn(List.of(sale));
+    LocalDate now = LocalDate.now();
+    when(saleRepository.findSaleByMonth(now)).thenReturn(List.of(sale));
 
-    RevenueResponse.MonthlyRevenue result = saleService.getMonthlyRevenue();
+    RevenueResponse.MonthlyRevenue result = saleService.getMonthlyRevenue(now);
 
     assertNotNull(result);
     assertNotNull(result.getMonthlyRevenue());

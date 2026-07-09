@@ -348,17 +348,17 @@
           }
         },
         {
-          "name": "Today revenue",
+          "name": "Day revenue",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{base_url}}/sales/today-revenue", "host": ["{{base_url}}"], "path": ["sales", "today-revenue"] }
+            "url": { "raw": "{{base_url}}/sales/day-revenue", "host": ["{{base_url}}"], "path": ["sales", "day-revenue"] }
           }
         },
         {
-          "name": "Monthly revenue",
+          "name": "Month revenue",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{base_url}}/sales/monthly-revenue", "host": ["{{base_url}}"], "path": ["sales", "monthly-revenue"] }
+            "url": { "raw": "{{base_url}}/sales/month-revenue", "host": ["{{base_url}}"], "path": ["sales", "month-revenue"] }
           }
         },
         {

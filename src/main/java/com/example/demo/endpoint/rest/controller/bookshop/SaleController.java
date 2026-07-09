@@ -6,6 +6,7 @@ import com.example.demo.exception.BadRequestException;
 import com.example.demo.service.SaleService;
 import jakarta.validation.Valid;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -48,18 +49,20 @@ public class SaleController {
         .body(saleService.finalize(saleId, confirm));
   }
 
-  @GetMapping("/today-revenue")
-  public ResponseEntity<RevenueResponse.TodayRevenue> getTodayRevenue() {
+  @GetMapping("/day-revenue")
+  public ResponseEntity<RevenueResponse.TodayRevenue> getTodayRevenue(
+      @RequestParam(required = false) LocalDate t) {
     return ResponseEntity.status(HttpStatus.OK)
         .header("Content-Type", "application/json")
-        .body(saleService.getTodayRevenue());
+        .body(saleService.getTodayRevenue((t != null) ? t : LocalDate.now()));
   }
 
-  @GetMapping("/monthly-revenue")
-  public ResponseEntity<RevenueResponse.MonthlyRevenue> getMonthlyRevenue() {
+  @GetMapping("/month-revenue")
+  public ResponseEntity<RevenueResponse.MonthlyRevenue> getMonthlyRevenue(
+      @RequestParam(required = false) LocalDate t) {
     return ResponseEntity.status(HttpStatus.OK)
         .header("Content-Type", "application/json")
-        .body(saleService.getMonthlyRevenue());
+        .body(saleService.getMonthlyRevenue((t != null) ? t : LocalDate.now()));
   }
 
   @GetMapping("/top-sellers")
