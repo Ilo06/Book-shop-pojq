@@ -11,7 +11,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ISBNSearchResponse {
+public class ExternalSearchResponse {
+  private String provider;
   private String title;
   private String isbn;
   private Year firstPublishYear;

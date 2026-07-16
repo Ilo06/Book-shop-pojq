@@ -75,10 +75,18 @@ public class GlobalExceptionHandler {
         new ErrorResponse(
             HttpStatus.BAD_REQUEST.value(),
             "Bad Request",
-            "Malformed JSON request body or invalid data type format.\n%s"
+            "Malformed JSON request body or invalid data type format. %s"
                 .formatted(ex.getMessage()),
             LocalDateTime.now());
     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(BadGatewayException.class)
+  public ResponseEntity<ErrorResponse> handleBadGateway(BadGatewayException ex) {
+    ErrorResponse error =
+        new ErrorResponse(
+            HttpStatus.BAD_GATEWAY.value(), "Bad Gateway", (ex.getMessage()), LocalDateTime.now());
+    return new ResponseEntity<>(error, HttpStatus.BAD_GATEWAY);
   }
 
   @ExceptionHandler(MethodArgumentTypeMismatchException.class)

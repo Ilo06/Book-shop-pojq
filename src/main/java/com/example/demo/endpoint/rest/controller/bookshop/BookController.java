@@ -3,8 +3,9 @@ package com.example.demo.endpoint.rest.controller.bookshop;
 import com.example.demo.dto.request.CreateBookDTO;
 import com.example.demo.dto.response.BookResponse;
 import com.example.demo.dto.response.BookSummaryResponse;
+import com.example.demo.exception.BadGatewayException;
 import com.example.demo.service.BookService;
-import com.example.demo.service.ISBNService;
+import com.example.demo.service.ExternalSearchService;
 import jakarta.validation.Valid;
 import java.time.Instant;
 import java.util.List;
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class BookController {
 
   private final BookService bookService;
-  private final ISBNService iSBNService;
+  private final ExternalSearchService externalSearchService;
 
   @GetMapping
   public ResponseEntity<List<BookSummaryResponse>> listBooks(
@@ -39,11 +40,11 @@ public class BookController {
         .body(bookService.findById(bookId));
   }
 
-  @GetMapping(params = "isbn")
-  public ResponseEntity<?> findBookByISBN(@RequestParam String isbn) {
+  @GetMapping(path = "/external-search", params = "isbn")
+  public ResponseEntity<?> findBookByISBN(@RequestParam String isbn) throws BadGatewayException {
     return ResponseEntity.status(HttpStatus.OK)
         .header("Content-Type", "application/json")
-        .body(iSBNService.findISBNByISBN(isbn));
+        .body(externalSearchService.findBookByISBN(isbn));
   }
 
   @PostMapping
