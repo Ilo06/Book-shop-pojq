@@ -16,7 +16,11 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class ExternalSearchService {
   private final RestTemplate restTemplate = new RestTemplate();
-  private final String apiKey = System.getenv("GOOGLE_BOOKS_API_KEY");
+  private final String apiKey =
+      (System.getenv("GOOGLE_BOOKS_API_KEY") != null
+              && !System.getenv("GOOGLE_BOOKS_API_KEY").isBlank())
+          ? System.getenv("GOOGLE_BOOKS_API_KEY")
+          : System.getProperty("GOOGLE_BOOKS_API_KEY");
 
   public ExternalSearchResponse findBookByISBN(String isbn) throws BadGatewayException {
     Optional<ExternalSearchResponse> response = this.searchOpenLibrary(isbn);
