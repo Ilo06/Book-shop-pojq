@@ -396,6 +396,30 @@ paths:
                 items:
                   $ref: '#/components/schemas/StockEntry'
 
+  # External Search
+  /external-search:
+    get:
+      tags: [books]
+      summary: Recherche un livre par ISBN via des fournisseurs externes
+      operationId: findBookByISBN
+      parameters:
+        - name: isbn
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalSearchResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+
   # Book Copies (sous /books/{bookId}/copies)
   /books/{bookId}/copies:
     parameters:
@@ -789,6 +813,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
+    BadGateway:
+      description: Service externe indisponible
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
 
   schemas:
 
@@ -950,6 +980,22 @@ components:
             type: string
             format: uuid
           minItems: 1
+
+    ExternalSearchResponse:
+      type: object
+      properties:
+        provider:
+          type: string
+        title:
+          type: string
+        isbn:
+          type: string
+        firstPublishYear:
+          type: integer
+        authors:
+          type: array
+          items:
+            type: string
 
     # BookCopy
     BookCopy:
