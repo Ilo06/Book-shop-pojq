@@ -34,14 +34,19 @@ public class ExternalSearchService {
 
   private Optional<ExternalSearchResponse> searchOpenLibrary(String isbn) {
     String openLibraryURL = "https://openlibrary.org";
-    JsonNode book =
-        restTemplate.getForObject(
+    ResponseEntity<?> responseEntity =
+        restTemplate.getForEntity(
             openLibraryURL
                 + "/search.json?q="
                 + isbn
                 + "&fields=title,author_name,first_publish_year",
             JsonNode.class);
-    if (book != null && book.has("docs")) {
+    if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+      return Optional.empty();
+    }
+
+    JsonNode book = (JsonNode) responseEntity.getBody();
+    if (isNodeNotNull(book) && book.has("docs")) {
 
       ExternalSearchResponse response = new ExternalSearchResponse();
 
